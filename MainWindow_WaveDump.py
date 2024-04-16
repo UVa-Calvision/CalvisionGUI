@@ -34,8 +34,8 @@ import re
 from tab_SiPM_HV_config import *
 from tab_PIcontrol import *
 from tab_DAQ_control import *
-from tab_digitizer_config import *
-# from tab_calibrate import tab_calibrate
+# from tab_digitizer_config import *
+from tab_calibrate import tab_calibrate
 
 
 timestr = time.strftime("%Y-%m-%d-%H%M%S")
@@ -1372,7 +1372,7 @@ class Ui_MainWindow(object):
         mainLayout.addWidget(self.label_TextBrowser)
 
         self.textBrowser = QtWidgets.QTextBrowser()
-        self.textBrowser.setMinimumHeight(24)
+        self.textBrowser.setMinimumHeight(100)
         self.textBrowser.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Preferred)
         mainLayout.addWidget(self.textBrowser)
 
@@ -1394,9 +1394,9 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab_DAQ_control,"DAQ control")
         self.tab_DAQ_control_inst = tab_DAQ_control(self.tab_DAQ_control)
 
-        # self.tab_calibrate = QtWidgets.QWidget(self.centralwidget)
-        # self.tabWidget.addTab(self.tab_calibrate, "Calibration")
-        # self.tab_calibrate_inst = tab_calibrate(self.tab_calibrate)
+        self.tab_calibrate = QtWidgets.QWidget(self.centralwidget)
+        self.tabWidget.addTab(self.tab_calibrate, "Calibration")
+        self.tab_calibrate_inst = tab_calibrate(self.tab_calibrate)
 
     def start_WaveDump(self):
         # Step 2: Create a QThread object
