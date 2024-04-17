@@ -1,29 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainWindow_trying.ui'
-#
-# Created by: PyQt5 UI code generator 5.14.2
-#
-# WARNING! All changes made in this file will be lost!
-from PyQt5.QtWidgets import (QMainWindow, QTextEdit,
-                             QAction, QFileDialog, QApplication)
-# from PyDecode import PyDeocde
-# from ReviewPyDecode import ReviewPyDecode
-# import decode
 import sys
 import time
 import os
 import subprocess
 from pathlib import Path
 import xml.etree.ElementTree as ET
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
-from Worker_startWaveDump import *
-# from Worker_startDecode import *
-# from Worker_runDecode import *
-from datetime import datetime
-from datetime import date
+from datetime import date, datetime
 import binascii
 import time
 import csv

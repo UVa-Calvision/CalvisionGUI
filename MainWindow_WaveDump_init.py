@@ -1,4 +1,4 @@
-from MainWindow_WaveDump import Ui_MainWindow
+from MainWindow import Ui_MainWindow
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import datetime
