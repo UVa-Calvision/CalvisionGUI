@@ -50,7 +50,8 @@ config_list = [
 
 
 class tab_digitizer_config(object):
-    def __init__(self, MainWindow):
+    def __init__(self, run_config, MainWindow):
+        self.run_config = run_config
         self.device_input_list = [{} for x in section_headers]
         self.setupUi(MainWindow)
 

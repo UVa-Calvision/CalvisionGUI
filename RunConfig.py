@@ -58,17 +58,26 @@ class RunConfig:
         self.back_filter_type = None
         self.angle = None
 
-    def new_config():
+    # def new_config():
+    #     run_numbers = [int(name[4:]) for name in os.listdir(staging_area) if name.startswith("run_")]
+    #     for i in range(len(run_numbers)):
+    #         if i not in run_numbers:
+    #             config = RunConfig()
+    #             config.run_number = i
+    #             return config
+    #     config = RunConfig()
+    #     config.run_number = len(run_numbers)
+    #     return config
+ 
+    def make_next_run(self):
         run_numbers = [int(name[4:]) for name in os.listdir(staging_area) if name.startswith("run_")]
         for i in range(len(run_numbers)):
             if i not in run_numbers:
-                config = RunConfig()
-                config.run_number = i
-                return config
-        config = RunConfig()
-        config.run_number = len(run_numbers)
-        return config
-            
+                self.run_number = i
+                self.save()
+                return
+        self.run_number = len(run_numbers)
+        self.save()
 
 
     def to_dict(self):
@@ -88,9 +97,6 @@ class RunConfig:
         self.back_sipm_type = d['Back SiPM']
         self.back_filter_type = d['Back Filter']
         self.angle = d['Angle']
-
-    def to_list(self):
-        return list(self.to_dict().values())
 
     def open(run_number):
         config = RunConfig()
@@ -122,6 +128,23 @@ class RunConfig:
                 configs.append(c)
         return configs
 
+    def run_name(self):
+        return "run_{}".format(self.run_number)
     
     def get_path(self):
-        return "/home/uva/daq_staging/run_{}/config.json".format(self.run_number)
+        return self.run_directory() + "/config.json"
+
+    def run_directory(self):
+        return staging_area + "/" + self.run_name()
+
+    def hg_config_file(self):
+        return self.run_directory() + "/hg_config.cfg"
+
+    def lg_config_file(self):
+        return self.run_directory() + "/lg_config.cfg"
+
+    def hg_dump_file(self):
+        return self.run_directory() + "/dump_HG"
+
+    def lg_dump_file(self):
+        return self.run_directory() + "/dump_LG"

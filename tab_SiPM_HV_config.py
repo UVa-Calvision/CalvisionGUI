@@ -5,18 +5,20 @@ import time
 
 import pyqtgraph as pg
 from random import randint
-
+from MonitorPlots import *
 
 
 
 class tab_SiPM_HV_config(object):
 
-    def __init__(self, MainWindow, portsList):
-        
+    def __init__(self, run_config, status, MainWindow, devices):
+        self.run_config = run_config
+        self.status = status
         self.widgetList = []
         self.hv = A7585D()
         self.hv2 = A7585D()
-        self.portsList = portsList
+        self.portsList = devices.caen_hv_devices
+        print("Ports: {}".format(self.portsList))
         self.hv_logfile_name = 'hv_log.csv'
         self.hv2_logfile_name = 'hv2_log.csv'
         self.setup_UI(MainWindow)
@@ -78,65 +80,22 @@ class tab_SiPM_HV_config(object):
         row += 1
         self.setup_UI_hv2(row)
 
-
-        row += 1
-        column = 0
-        self.pushButton_timer_start = QtWidgets.QPushButton()
-        self.pushButton_timer_start.setText("Start Monitor")
-        self.gridLayout.addWidget(self.pushButton_timer_start, row, column, 1, 1)
-        self.pushButton_timer_start.clicked.connect(self.timer_start)
-        self.pushButton_timer_start.setEnabled(False)
-
-        column += 1
-        self.pushButton_timer_stop = QtWidgets.QPushButton()
-        self.pushButton_timer_stop.setText("Stop")
-        self.gridLayout.addWidget(self.pushButton_timer_stop, row, column, 1, 1)
-        self.pushButton_timer_stop.clicked.connect(self.timer_stop)
-        self.pushButton_timer_stop.setEnabled(False)
-
-
         sectionLayout.addWidget(buttonWindow)
 
 
         # Add a timer to simulate new temperature measurements
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.update_plot)
 
+        self.monitor_plots = MonitorPlots(self.status)
+        self.monitor_plots.make_plot("HV1 Voltage vs Time", "Voltage (V)")
+        self.monitor_plots.make_plot("HV1 Current vs Time", "Current (mA)", use_log = True)
+        self.monitor_plots.make_plot("HV2 Voltage vs Time", "Voltage (V)")
+        self.monitor_plots.make_plot("HV2 Current vs Time", "Current (mA)", use_log = True)
+        self.monitor_plots.request_monitor_data.connect(self.update_plot)
+        sectionLayout.addWidget(self.monitor_plots.get_layout_widget())
 
-        hv1_gridLayout = pg.GraphicsLayoutWidget()
-        hv1_gridLayout.setBackground('w')
-        self.line_volt1 = self.plot_data(layoutWidget = hv1_gridLayout, title = "HV1 Voltage vs Time", ylabel = "Voltage (V)", use_log = False)
-        self.line_curr1 = self.plot_data(layoutWidget = hv1_gridLayout, title = "HV1 Current vs Time", ylabel = "Current (mA)", use_log = True)
-        # sectionLayout.addWidget(hv1_gridLayout)
-
-
-        # hv2_gridLayout = pg.GraphicsLayoutWidget()
-        # hv2_gridLayout.setBackground('w')
-        self.line_volt2 = self.plot_data(layoutWidget = hv1_gridLayout, title = "HV2 Voltage vs Time", ylabel = "Voltage (V)", use_log = False)
-        self.line_curr2 = self.plot_data(layoutWidget = hv1_gridLayout, title = "HV2 Current vs Time", ylabel = "Current (mA)", use_log = True)
-        sectionLayout.addWidget(hv1_gridLayout)
-
-
-        # self.gridLayoutWidget2 = QtWidgets.QWidget(MainWindow)
-        # self.gridLayoutWidget2.setGeometry(QtCore.QRect(0,150,300,300))
-        # self.gridLayoutWidget3 = QtWidgets.QWidget(MainWindow)
-        # self.gridLayoutWidget3.setGeometry(QtCore.QRect(300,150,300,300))
-        self.time1 = [0]
-        self.volt1 = [0]
-        self.curr1 = [0]
-        # self.line_volt1=self.plot_data(x=self.time1,y=self.volt1,layoutWidget=self.gridLayoutWidget2,title="HV1 Voltage vs Time",ylabel="Voltage (V)")
-        # self.line_curr1=self.plot_data(x=self.time1,y=self.curr1,layoutWidget=self.gridLayoutWidget3,title="HV1 Current vs Time",ylabel="Current (mA)",use_log=True)
-
-        # self.gridLayoutWidget4 = QtWidgets.QWidget(MainWindow)
-        # self.gridLayoutWidget4.setGeometry(QtCore.QRect(600,150,300,300))
-        # self.gridLayoutWidget5 = QtWidgets.QWidget(MainWindow)
-        # self.gridLayoutWidget5.setGeometry(QtCore.QRect(900,150,300,300))
-        self.time2 = [0]
-        self.volt2 = [0]
-        self.curr2 = [0]
-        # self.line_volt2=self.plot_data(x=self.time2,y=self.volt2,layoutWidget=self.gridLayoutWidget4,title="HV2 Voltage vs Time",ylabel="Voltage (V)")
-        # self.line_curr2=self.plot_data(x=self.time2,y=self.curr2,layoutWidget=self.gridLayoutWidget5,title="HV2 Current vs Time",ylabel="Current (mA)",use_log=True)
+        row += 1
+        self.gridLayout.addWidget(self.monitor_plots.start_button, row, 0, 1, 1)
+        self.gridLayout.addWidget(self.monitor_plots.stop_button, row, 1, 1, 1)
 
 
 
@@ -243,81 +202,24 @@ class tab_SiPM_HV_config(object):
         self.gridLayout.addWidget(self.checkBox_out_en_dev2,row, column, 1, 1)
         self.checkBox_out_en_dev2.stateChanged.connect(self.enable_HV2)
 
-
-    def plot_data(self,layoutWidget,title,ylabel,use_log=False):
-        pen = pg.mkPen(color='b', width=3)
-        styles = {"color": "red", "font-size": "12px"}
-
-        plot = layoutWidget.addPlot()
-        plot.setTitle(title, color = 'b', size = '10pt')
-        plot.setLabel("left", ylabel, **styles)
-        plot.setLabel("bottom", "Time (s)", **styles)
-        plot.addLegend()
-        plot.showGrid(x=True, y=True)
-        if use_log:
-            plot.setLogMode(y=True)
-
-        return plot.plot([0], [0], pen=pen)
-
-        # gridLayout = QtWidgets.QGridLayout(layoutWidget)
-        # pen = pg.mkPen(color='b', width=3)
-        # plot_graph = pg.PlotWidget()
-
-        # # setCentralWidget(plot_graph)
-        # gridLayout.addWidget(plot_graph,0,0,1,1)
-
-        # plot_graph.setBackground("w")
-        # 
-
-        # # Temperature vs time dynamic plot
-
-        # plot_graph.setTitle(title, color="b", size="10pt")
-        # styles = {"color": "red", "font-size": "12px"}
-        # plot_graph.setLabel("left", ylabel, **styles)
-        # plot_graph.setLabel("bottom", "Time (min)", **styles)
-        # plot_graph.addLegend()
-        # plot_graph.showGrid(x=True, y=True)
-        # # plot_graph.setYRange(20, 40)
-        # if use_log:
-        #     plot_graph.setLogMode(y=True)
-        # 
-        # # Get a line reference
-        # line = plot_graph.plot(x,y,pen=pen)
-        # return line
-
-        
-        # self.timer.start()
-
+ 
     def update_plot(self):       
 
         if self.hv.ser != None:
-            time = self.time1[-1] + 1
             volt = self.get_voltage(self.hv)
             curr = self.get_current(self.hv)
-            self.time1.append(time)
-            self.volt1.append(volt)
-            self.curr1.append(curr)
-            self.line_volt1.setData([d/60.0 for d in self.time1[1:]], self.volt1[1:])
-            self.line_curr1.setData([d/60.0 for d in self.time1[1:]], self.curr1[1:])
+            self.monitor_plots.add_point(0, volt)
+            self.monitor_plots.add_point(1, curr)
             with open(self.hv_logfile_name,'a') as f:
-                f.writelines(str(time)+','+str(round(volt,3))+','+str(round(curr,3))+'\n')
+                f.writelines(str(self.status.monitor_time)+','+str(round(volt,3))+','+str(round(curr,3))+'\n')
 
         if self.hv2.ser != None:
-            time = self.time2[-1] + 1
             volt = self.get_voltage(self.hv2)
             curr = self.get_current(self.hv2)
-            self.time2.append(time)
-            self.volt2.append(volt)
-            self.curr2.append(curr)
-            self.line_volt2.setData([d/60.0 for d in self.time2[1:]], self.volt2[1:])
-            self.line_curr2.setData([d/60.0 for d in self.time2[1:]], self.curr2[1:])
+            self.monitor_plots.add_point(2, volt)
+            self.monitor_plots.add_point(3, curr)
             with open(self.hv2_logfile_name,'a') as f:
-                f.writelines(str(time)+','+str(round(volt,3))+','+str(round(curr,3))+'\n')
-
-        
-
-        
-
+                f.writelines(str(self.status.monitor_time)+','+str(round(volt,3))+','+str(round(curr,3))+'\n')
 
     def open_dev1(self):
         try:
@@ -340,8 +242,6 @@ class tab_SiPM_HV_config(object):
                         print("Firmware ver ="+str(self.hv.get_parameter(A7585D_REG.FW_VERSION)))
                         print("Hardware ver ="+str(self.hv.get_parameter(A7585D_REG.HW_VERSION)))
                         print("Serial number="+str(self.hv.get_parameter(A7585D_REG.SERIAL_NUMBER)))
-                        self.pushButton_timer_start.setEnabled(True)
-                        self.pushButton_timer_stop.setEnabled(True)
                         self.pushButton_set_dev1.setEnabled(True) 
                     else:
                         print("Product code does not match. Try another device.")
@@ -404,8 +304,6 @@ class tab_SiPM_HV_config(object):
                         print("Firmware ver ="+str(self.hv2.get_parameter(A7585D_REG.FW_VERSION)))
                         print("Hardware ver ="+str(self.hv2.get_parameter(A7585D_REG.HW_VERSION)))
                         print("Serial number="+str(self.hv2.get_parameter(A7585D_REG.SERIAL_NUMBER)))
-                        self.pushButton_timer_start.setEnabled(True)
-                        self.pushButton_timer_stop.setEnabled(True)
                         self.pushButton_set_dev2.setEnabled(True) 
                     else:
                         print("Product code does not match. Try another device.")
@@ -456,13 +354,6 @@ class tab_SiPM_HV_config(object):
         else:
             print("Error: please check SiPM HV connection")
 
-
-
-    def timer_start(self):
-        self.timer.start()
-
-    def timer_stop(self):
-        self.timer.stop()
 
         
 

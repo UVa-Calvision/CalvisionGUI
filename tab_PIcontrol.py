@@ -6,12 +6,15 @@ import subprocess
 import struct
 import time
 from CallProcess import *
+from MonitorPlots import *
 
 
 
 class tab_PIcontrol(object):
 
-    def __init__(self, MainWindow):
+    def __init__(self, run_config, run_status, MainWindow):
+        self.run_config = run_config
+        self.status = run_status
         self.setup_UI(MainWindow)
 
     def setup_UI(self, MainWindow):
@@ -64,11 +67,6 @@ class tab_PIcontrol(object):
         self.gridLayout.addWidget(self.pushButton_set_LED_low_voltage, row, column, 1, 1)
         self.pushButton_set_LED_low_voltage.clicked.connect(self.set_LED_lowvoltage_by_client)
 
-        # column += 1
-        # self.pushButton_TCPsend = QtWidgets.QPushButton()
-        # self.pushButton_TCPsend.setText("TCP Send")
-        # self.gridLayout.addWidget(self.pushButton_TCPsend, row, column, 1, 1)
-        # self.pushButton_TCPsend.clicked.connect(self.TCPsend)
         row += 1
         column = 2
         self.label = QtWidgets.QLabel()
@@ -94,48 +92,18 @@ class tab_PIcontrol(object):
         self.gridLayout.addWidget(self.pushButton_set_LED_high_voltage, row, column, 1, 1)
         self.pushButton_set_LED_high_voltage.clicked.connect(self.set_LED_highvoltage_by_client)
 
+
+        self.monitor_plots = MonitorPlots(self.status)
+        self.monitor_plots.make_plot("Front SiPM Temperature vs Time", "Temperature (C)")
+        self.monitor_plots.make_plot("Back SiPM Temperature vs Time", "Temperature (C)")
+        self.monitor_plots.make_plot("Box Temperature vs Time", "Temperature (C)")
+        self.monitor_plots.make_plot("Humidity vs Time", "Relative Humidity (%)")
+        self.monitor_plots.request_monitor_data.connect(self.update_plot)
+        sectionLayout.addWidget(self.monitor_plots.get_layout_widget())
+
         row += 1
-        column = 0
-        self.pushButton_timer_start = QtWidgets.QPushButton()
-        self.pushButton_timer_start.setText("Start Monitor")
-        self.gridLayout.addWidget(self.pushButton_timer_start, row, column, 1, 1)
-        self.pushButton_timer_start.clicked.connect(self.timer_start)
-        self.pushButton_timer_start.setEnabled(True)
-
-        column += 1
-        self.pushButton_timer_stop = QtWidgets.QPushButton()
-        self.pushButton_timer_stop.setText("Stop")
-        self.gridLayout.addWidget(self.pushButton_timer_stop, row, column, 1, 1)
-        self.pushButton_timer_stop.clicked.connect(self.timer_stop)
-        self.pushButton_timer_stop.setEnabled(False)
-
-
-
-        # Add a timer to simulate new temperature measurements
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.update_plot)
-
-        self.time1 = [0]
-        self.temp1 = [0]
-
-        self.time2 = [0]
-        self.temp2 = [0]
-
-        self.time3 = [0]
-        self.temp3 = [0]
-
-        self.time4 = [0]
-        self.humidity = [0]
-
-        # GraphicsLayoutWidget
-        temperature_gridLayout = pg.GraphicsLayoutWidget()
-        temperature_gridLayout.setBackground('w')
-        self_line_temp1 = self.plot_data(layoutWidget = temperature_gridLayout, title = "Front SiPM Temperature vs Time", ylabel = "Temperature (C)")
-        self_line_temp2 = self.plot_data(layoutWidget = temperature_gridLayout, title = "Back SiPM Temperature vs Time", ylabel = "Temperature (C)")
-        self_line_temp3 = self.plot_data(layoutWidget = temperature_gridLayout, title = "Humidity Control Temperature vs Time", ylabel = "Temperature (C)")
-        self_line_humidity = self.plot_data(layoutWidget = temperature_gridLayout, title = "Humidity vs Time", ylabel = "Relative Humidity (%)")
-        sectionLayout.addWidget(temperature_gridLayout)
+        self.gridLayout.addWidget(self.monitor_plots.start_button, row, 0, 1, 1)
+        self.gridLayout.addWidget(self.monitor_plots.stop_button, row, 1, 1, 1)
 
 
         dacWindow = QtWidgets.QWidget()
@@ -221,61 +189,22 @@ class tab_PIcontrol(object):
     def callclient(self,cmd_args):
         ClientVerboseProcess().run(self.lineEdit_ipaddress.text(), self.lineEdit_port.text(), cmd_args)
 
-    def timer_start(self):
-        self.timer.start()
-        self.pushButton_timer_start.setEnabled(False)
-        self.pushButton_timer_stop.setEnabled(True)
-        self.monitor_time = 0
-
-    def timer_stop(self):
-        self.timer.stop()
-        self.pushButton_timer_start.setEnabled(True)
-        self.pushButton_timer_stop.setEnabled(False)
-
-    def plot_data(self, layoutWidget, title, ylabel):
-        pen = pg.mkPen(color='b', width=3)
-        styles = {"color": "red", "font-size": "12px"}
-    
-        plot = layoutWidget.addPlot()
-        plot.setTitle(title, color = 'b', size = '10pt')
-        plot.setLabel("left", ylabel, **styles)
-        plot.setLabel("bottom", "Time (sec)", **styles)
-        plot.addLegend()
-        plot.showGrid(x = True, y = True)
-        return plot.plot([0], [0], pen = pen)
-
-
     def update_plot(self):
-        self.monitor_time += self.timer.interval() / 1000
-
         # request humidity control to start a read; will actually read out later
         self.read_client_float('HumidityControl RequestRead')
 
         y = self.read_client_float('TemperatureRead Read 0')
         if y != None:
-            self.time1.append(self.monitor_time)
-            self.temp1.append(y)
-            self.line_temp1.setData(self.time1, self.temp1)
+            self.monitor_plots.add_point(0, y)
 
         y = self.read_client_float('TemperatureRead Read 1')
         if y != None:
-            self.time2.append(self.monitor_time)
-            self.temp2.append(y)
-            self.line_temp2.setData(self.time2, self.temp2)
+            self.monitor_plots.add_point(1, y)
 
         y = self.read_client_float('HumidityControl ReadTemperature')
         if y != None:
-            self.time3.append(self.monitor_time)
-            self.temp3.append(y)
-            self.line_temp3.setData(self.time3, self.temp3)
+            self.monitor_plots.add_point(2, y)
 
         y = self.read_client_float('HumidityControl ReadHumidity')
         if y != None:
-            self.time4.append(self.monitor_time)
-            self.humidity.append(y)
-            # self.line_humidity.setData(self.time4, self.humidity)
-        
-
-
-
-
+            self.monitor_plots.add_point(3, y)
