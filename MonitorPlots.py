@@ -68,6 +68,11 @@ class MonitorPlots(QtCore.QObject):
         self.y_values[i].append(y)
         self.lines[i].setData(self.times[i], self.y_values[i])
 
+    def set_data(self, i, ts, ys):
+        self.times[i] = ts
+        self.y_values[i] = ys
+        self.lines[i].setData(self.times[i], self.y_values[i])
+
     def get_layout_widget(self):
         return self.layoutWidget
         

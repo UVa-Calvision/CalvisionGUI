@@ -32,21 +32,43 @@ class tab_run_control(QtCore.QObject):
         self.repeat_warning = QtWidgets.QLabel()
         runLayout.addRow(self.repeat_warning)
 
+        # statusWindow = QtWidgets.QWidget()
+        # statusWindow.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        # statusLayout = QtWidgets.QFormlayout(statusWindow)
+        # sectionLayout.addWidget(statusWindow)
+        # 
+
+        # self.statusLabel_local_time = QLabel()
+        # statusLayout.addRow("Local Time: ", self.statusLabel_local_time)
+
+        # self.statusLabel_run_time = QLabel()
+        # statusLayout.addRow("Run Time: ", self.statusLabel_run_time)
+
+
+        runButtonWindow = QtWidgets.QWidget()
+        runButtonWindow.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Preferred)
+        runButtonLayout = QtWidgets.QHBoxLayout(runButtonWindow)
+        sectionLayout.addWidget(runButtonWindow)
+
         self.beginRunButton = QtWidgets.QPushButton()
         self.beginRunButton.setText("Begin Run")
         self.beginRunButton.clicked.connect(self.begin_run)
         self.beginRunButton.setEnabled(True)
-        sectionLayout.addWidget(self.beginRunButton)
+        runButtonLayout.addWidget(self.beginRunButton)
 
         self.endRunButton = QtWidgets.QPushButton()
         self.endRunButton.setText("End Run")
         self.endRunButton.clicked.connect(self.end_run)
         self.endRunButton.setEnabled(False)
-        sectionLayout.addWidget(self.endRunButton)
+        runButtonLayout.addWidget(self.endRunButton)
+
+        # Connect signals and slots
 
         self.run_config_changed.connect(self.update_config)
         self.begin_run.connect(self.begin_run_button)
         self.end_run.connect(self.end_run_button)
+
+        # Update state
 
         self.update_config()
 

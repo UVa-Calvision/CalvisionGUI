@@ -87,8 +87,8 @@ class tab_DAQ_control(object):
         hg_times, hg_channels, lg_times, lg_channels = waveform_data
         if hg_times != None and hg_channels != None:
             for i in range(len(hg_channels)):
-                self.hg_plots[i].setData(hg_times, hg_channels[i])
+                self.monitor_plots.set_data(i, hg_times, hg_channels[i])
         
         if lg_times != None and lg_channels != None:
             for i in range(len(lg_channels)):
-                self.lg_plots[i].setData(lg_times, lg_channels[i])
+                self.monitor_plots.set_data(8 + i, lg_times, lg_channels[i])

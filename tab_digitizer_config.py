@@ -4,7 +4,7 @@ common_config_dict = {
     "POST_TRIGGER": ("Post Trigger", 50, {"min": 0, "max": 100}),
     "PULSE_POLARITY": ("Pulse Polarity", 0, ["POSITIVE", "NEGATIVE"]),
     "EXTERNAL_TRIGGER": ("Ext. Trigger", 0, ["DISABLED", "ACQUISITION_ONLY", "ACQUISITION_AND_TRGOUT"]),
-    "FAST_TRIGGER": ("Fast Trigger", 0, ["DISABLED", "ACQUISITION_ONLY"]),
+    "FAST_TRIGGER": ("Fast Trigger", 1, ["DISABLED", "ACQUISITION_ONLY"]),
     "ENABLED_FAST_TRIGGER_DIGITIZING": ("Digitize Trigger", 0, ["YES", "NO"]),
     "DRS4_FREQUENCY": ("Digitizer Frequency", 2, ["5 GHz", "2.5 GHz", "1 GHz", "750 MHz"]),
     "FPIO_LEVEL": ("Front Panel IO Level", 0, ["NIM", "TTL"]),
@@ -224,7 +224,9 @@ class tab_digitizer_config(object):
             out.write(section_headers[common_section] + "\n")
             for key in common_config_dict:
                 widget = self.device_input_list[0][key]
-                if type(widget) is QtWidgets.QComboBox:
+                if key == 'DRS4_FREQUENCY':
+                    out.write('{} {}\n'.format(key, widget.currentIndex()))
+                elif type(widget) is QtWidgets.QComboBox:
                     out.write('{} {}\n'.format(key, widget.currentText()))
                 elif type(widget) is QtWidgets.QSpinBox:
                     out.write('{} {}\n'.format(key, widget.value()))
