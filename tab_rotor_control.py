@@ -3,6 +3,10 @@ from RunConfig import *
 import time
 import serial
 import os
+import pyqtgraph as pg
+
+from math import pi, cos, sin
+
 
 class tab_rotor_control(QtCore.QObject):
 
@@ -66,6 +70,11 @@ class tab_rotor_control(QtCore.QObject):
         self.updateAngle_button.setEnabled(False)
         self.updateAngle_button.clicked.connect(self.update_angle)
         controlLayout.addRow(self.updateAngle_button)
+
+        plotWidget = pg.GraphicsLayoutWidget()
+        plotWidget.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.MinimumExpanding)
+        self.make_angle_plot(plotWidget)
+        sectionLayout.addWidget(plotWidget)
 
 
     def setup_device(self):
@@ -147,3 +156,97 @@ class tab_rotor_control(QtCore.QObject):
         except ValueError:
             print("Cannot convert {} to an integer in degrees".format(self.angle_comboBox.currentText()))
 
+    def rotated_polygon(self, points, color):
+        plot_angle = pi * (270.0 - float(self.angle)) / 180.0
+        cos_t = cos(plot_angle)
+        sin_t = sin(plot_angle)
+
+        for i in range(len(points)):
+            x = cos_t * points[i].x() - sin_t * points[i].y()
+            y = sin_t * points[i].x() + cos_t * points[i].y()
+            points[i].setX(x)
+            points[i].setY(y)
+
+        polygon = QtWidgets.QGraphicsPolygonItem(QtGui.QPolygonF(points))
+        brush = QtGui.QBrush()
+        brush.setColor(color)
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        pen = QtGui.QPen()
+        pen.setColor(color)
+        pen.setJoinStyle(QtCore.Qt.MiterJoin)
+        polygon.setBrush(brush)
+        polygon.setPen(pen)
+
+        return polygon
+
+
+    def make_angle_plot(self, plotWidget):
+        plotWidget.setBackground('w')
+
+        plot = plotWidget.addPlot()
+        plot.setAspectLocked(lock = True, ratio = 1.0)
+
+        plot.setTitle("Angle Orientation (beam incident from left; green = front, red = rear)", color = 'b', size = '12pt')
+        plot.hideAxis('left')
+        plot.hideAxis('bottom')
+        
+        # Beam line
+        plot.addLine(y = 0, pen = 0.2)
+        
+        arrow_brush = QtGui.QBrush()
+        arrow_brush.setColor(QtCore.Qt.black)
+        arrow_brush.setStyle(QtCore.Qt.SolidPattern)
+        arrow_pen = QtGui.QPen()
+        arrow_pen.setWidthF(0.2)
+        arrow_pen.setColor(QtCore.Qt.black)
+        arrow_pen.setJoinStyle(QtCore.Qt.MiterJoin)
+
+        for i in range(3):
+            arrow = QtWidgets.QGraphicsPolygonItem(QtGui.QPolygonF([
+                            QtCore.QPointF(-17 - i, 0),
+                            QtCore.QPointF(-17.3 - i, -0.3),
+                            QtCore.QPointF(-17.3 - i, 0.3)
+                        ]))
+            arrow.setBrush(arrow_brush)
+            arrow.setPen(arrow_pen)
+            plot.addItem(arrow)
+
+        # Radial circle
+        circle = QtWidgets.QGraphicsEllipseItem(-15, -15, 30, 30)
+        circle.setPen(pg.mkPen(0.2))
+        plot.addItem(circle)
+
+        if self.angle != None:
+            bar_width = 2
+            bar_length = 10
+            cap_length = 1
+
+            bar_points = [
+                QtCore.QPointF(bar_length, bar_width),
+                QtCore.QPointF(bar_length, -bar_width),
+                QtCore.QPointF(-bar_length, -bar_width),
+                QtCore.QPointF(-bar_length, bar_width)
+            ]
+
+            front_cap_points = [
+                QtCore.QPointF(bar_length, bar_width),
+                QtCore.QPointF(bar_length + cap_length, bar_width),
+                QtCore.QPointF(bar_length + cap_length, -bar_width),
+                QtCore.QPointF(bar_length, -bar_width)
+            ]
+
+            rear_cap_points = [
+                QtCore.QPointF(-bar_length, bar_width),
+                QtCore.QPointF(-bar_length - cap_length, bar_width),
+                QtCore.QPointF(-bar_length - cap_length, -bar_width),
+                QtCore.QPointF(-bar_length, -bar_width)
+            ]
+
+
+            poly_bar = self.rotated_polygon(bar_points, QtCore.Qt.black)
+            poly_fcap = self.rotated_polygon(front_cap_points, QtCore.Qt.green)
+            poly_rcap = self.rotated_polygon(rear_cap_points, QtCore.Qt.red)
+
+            plot.addItem(poly_bar)
+            plot.addItem(poly_fcap)
+            plot.addItem(poly_rcap)

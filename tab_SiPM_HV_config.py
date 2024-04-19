@@ -107,7 +107,7 @@ class tab_SiPM_HV_config(object):
         self.gridLayout.addWidget(self.comboBox_dev1_Port, row, column, 1, 1)
         try:
             self.comboBox_dev1_Port.setCurrentIndex(
-                self.portsList.index("/dev/CAEN21756"))
+                self.portsList.index("/dev/CAEN_Front_Bias_21756"))
         except Exception as e:
             pass
 
@@ -159,7 +159,7 @@ class tab_SiPM_HV_config(object):
         self.gridLayout.addWidget(self.comboBox_dev2_Port, row, column, 1, 1)
         try:
             self.comboBox_dev2_Port.setCurrentIndex(
-                self.portsList.index("/dev/CAEN21758"))
+                self.portsList.index("/dev/CAEN_Rear_Bias_21758"))
         except Exception as e:
             pass
 
