@@ -1,0 +1,1 @@
+KERNEL=="v1718_[0-9]", SYMLINK+="usb/%k", MODE="0666"

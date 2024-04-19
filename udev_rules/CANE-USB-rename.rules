@@ -1,0 +1,3 @@
+ACTION=="add", ATTRS{serial}=="AI05VLB7", SYMLINK+="CAEN_Front_Bias_21756"
+ACTION=="add", ATTRS{serial}=="AI05MD4A", SYMLINK+="CAEN_Rear_Bias_21758"
+ACTION=="add", ATTRS{serial}=="ADAQFVOl6", SYMLINK+="ROTOR"

@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from CallProcess import *
+from Worker_startDAQ import *
 
 
 class PulserProcess(CallProcess):
@@ -46,6 +47,13 @@ class tab_calibrate(QtCore.QObject):
         self.pushButton_calibrateDRS.clicked.connect(self.calibrate_DRS)
 
         column += 1
+        self.pushButton_resetDRS = QtWidgets.QPushButton()
+        self.pushButton_resetDRS.setText("Reset DRS's")
+        self.pushButton_resetDRS.clicked.connect(Reset_DAQ.execute)
+        self.sectionLayout.addWidget(self.pushButton_resetDRS, row, column, 1, 1)
+
+
+        column += 1
         self.pushButton_pulseOn = QtWidgets.QPushButton()
         self.pushButton_pulseOn.setText("Pulser On")
         self.sectionLayout.addWidget(self.pushButton_pulseOn, row, column, 1, 1)
@@ -58,6 +66,7 @@ class tab_calibrate(QtCore.QObject):
         self.sectionLayout.addWidget(self.pushButton_pulseOff, row, column, 1, 1)
         self.pushButton_pulseOff.clicked.connect(self.pulse_off)
         self.pushButton_pulseOff.setEnabled(True)
+
 
 
     def calibrate_DRS(self):

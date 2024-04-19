@@ -53,14 +53,14 @@ class MonitorPlots(QtCore.QObject):
         plot.setLabel("left", "Channel (mV)", **self.styles)
         plot.setLabel("bottom", "Time (ns)", **self.styles)
 
-        legend = pg.LegendItem(horSpacing = 0, frame = False, colCount = 1)
-        self.layoutWidget.addItem(legend)
+        # legend = pg.LegendItem(horSpacing = 0, frame = False, colCount = 1)
+        # self.layoutWidget.addItem(legend)
 
         for i in range(n):
             self.times.append([])
             self.y_values.append([])
             self.lines.append(plot.plot([0], [0], pen = pg.intColor(i), name = legend_fmt.format(i)))
-            legend.addItem(self.lines[-1], legend_fmt.format(i))
+            # legend.addItem(self.lines[-1], legend_fmt.format(i))
       
 
     def add_point(self, i, y):
