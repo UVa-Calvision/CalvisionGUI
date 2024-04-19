@@ -5,7 +5,7 @@ class DeviceList:
     def __init__(self):
         self.caen_hv_devices = []
         self.caen_digi_devices = []
-        self.rotor_device = None
+        self.rotor_devices = []
 
         self.find_devices()
 
@@ -13,4 +13,4 @@ class DeviceList:
         dev_path = Path('/dev')
         self.caen_hv_devices = [str(x) for x in dev_path.glob('CAEN*')]
         self.caen_digi_devices = [str(x) for x in dev_path.glob('v1718_*')]
-        self.rotor_device = str(dev_path / 'ROTOR')
+        self.rotor_devices = [str(x) for x in dev_path.glob('ROTOR*')]

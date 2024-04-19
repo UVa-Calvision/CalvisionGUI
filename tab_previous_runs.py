@@ -52,3 +52,9 @@ class tab_previous_runs:
             if matched:
                 return True
         return False
+
+    def latest_run(self):
+        if len(self.existing_runs) > 0:
+            return self.existing_runs[-1]
+        else:
+            return None

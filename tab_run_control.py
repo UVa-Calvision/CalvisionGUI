@@ -1,21 +1,49 @@
 from PyQt5 import QtWidgets, QtCore
 from RunConfig import *
+import datetime
 
 
 class tab_run_control(QtCore.QObject):
+
+    status_fields = [
+        "Local Time",
+        "Run Time",
+        "Run Status",
+        "Front SiPM HV Voltage",
+        "Front SiPM HV Current",
+        "Front SiPM Temperature",
+        "Back SiPM HV Voltage",
+        "Back SiPM HV Current",
+        "Back SiPM Temperature",
+        "Box Temperature",
+        "Box Relative Humidity",
+        "LED Voltage",
+        "BJT Bias",
+        "Pulser Enabled",
+    ]
+
     
     run_config_changed = QtCore.pyqtSignal()
     begin_run = QtCore.pyqtSignal()
     end_run = QtCore.pyqtSignal()
 
-    def __init__(self, run_config, MainWindow):
+    def __init__(self, run_config, run_status, MainWindow):
         super().__init__()
         self.run_config = run_config
+        self.run_status = run_status
+        self.status_values = {}
+        for s in tab_run_control.status_fields:
+            self.status_values[s] = None
+
         self.setup_UI(MainWindow)
 
     def setup_UI(self, MainWindow):
         
         sectionLayout = QtWidgets.QVBoxLayout(MainWindow)
+
+        runSectionLabel = QtWidgets.QLabel()
+        runSectionLabel.setText("----- Run Control")
+        sectionLayout.addWidget(runSectionLabel)
 
         runWindow = QtWidgets.QWidget()
         runLayout = QtWidgets.QFormLayout(runWindow)
@@ -23,6 +51,11 @@ class tab_run_control(QtCore.QObject):
 
         self.config_comboBoxes = {}
         for key in config_options:
+            if key == 'Angle':
+                self.config_angleLabel = QtWidgets.QLabel()
+                self.config_angleLabel.setText("No angle set")
+                runLayout.addRow(key, self.config_angleLabel)
+                continue
             self.config_comboBoxes[key] = QtWidgets.QComboBox()
             self.config_comboBoxes[key].addItems(config_options[key])
             self.config_comboBoxes[key].setEditable(True)
@@ -32,17 +65,21 @@ class tab_run_control(QtCore.QObject):
         self.repeat_warning = QtWidgets.QLabel()
         runLayout.addRow(self.repeat_warning)
 
-        # statusWindow = QtWidgets.QWidget()
-        # statusWindow.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
-        # statusLayout = QtWidgets.QFormlayout(statusWindow)
-        # sectionLayout.addWidget(statusWindow)
-        # 
 
-        # self.statusLabel_local_time = QLabel()
-        # statusLayout.addRow("Local Time: ", self.statusLabel_local_time)
+        statusSectionLabel = QtWidgets.QLabel()
+        statusSectionLabel.setText("----- Run Status")
+        sectionLayout.addWidget(statusSectionLabel)
 
-        # self.statusLabel_run_time = QLabel()
-        # statusLayout.addRow("Run Time: ", self.statusLabel_run_time)
+        statusWindow = QtWidgets.QWidget()
+        statusWindow.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        statusLayout = QtWidgets.QFormLayout(statusWindow)
+        sectionLayout.addWidget(statusWindow)
+
+
+        self.statusLabels = {}
+        for name in tab_run_control.status_fields:
+            self.statusLabels[name] = QtWidgets.QLabel()
+            statusLayout.addRow(name + ":", self.statusLabels[name])
 
 
         runButtonWindow = QtWidgets.QWidget()
@@ -71,6 +108,7 @@ class tab_run_control(QtCore.QObject):
         # Update state
 
         self.update_config()
+        self.update_status_all()
 
 
     def begin_run_button(self):
@@ -87,8 +125,9 @@ class tab_run_control(QtCore.QObject):
 
     def update_config(self):
         config_values = {}
-        for key in config_options:
+        for key in self.config_comboBoxes:
             config_values[key] = self.config_comboBoxes[key].currentText()
+        config_values['Angle'] = self.config_angleLabel.text()
         self.run_config.from_dict(config_values)
 
     def update_repeat_warning(self, is_repeated):
@@ -98,3 +137,18 @@ class tab_run_control(QtCore.QObject):
         else:
             self.repeat_warning.setText("Run config doesn't exist in staging area yet.")
             self.repeat_warning.setStyleSheet("QLabel { color : black; }")
+
+    def update_status_all(self):
+        for key in tab_run_control.status_fields:
+            self.update_status(key)
+
+    def update_status(self, key):
+        if self.status_values[key] != None:
+            self.statusLabels[key].setText(self.status_values[key])
+
+    def update_angle(self, angle):
+        if angle == None:
+            self.config_angleLabel.setText("No angle set")
+        else:
+            self.config_angleLabel.setText(str(angle))
+        self.run_config_changed.emit()

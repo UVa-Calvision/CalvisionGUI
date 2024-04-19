@@ -17,6 +17,8 @@ class Worker_startDAQ(QObject,CallProcess):
         source_conda = "source /home/uva/miniforge3/etc/profile.d/conda.sh; conda activate calvision;"
         CallProcess.run(self, source_conda + "/home/uva/local_install/bin/dual_readout {} {} {}".format(run_name, hg_config, lg_config))
 
+        print("Process closed!")
+
         self.finished.emit()
 
     def handle_output(self, line):

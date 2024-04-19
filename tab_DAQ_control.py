@@ -11,9 +11,12 @@ import numpy as np
 from MonitorPlots import *
 
 
-class tab_DAQ_control(object):
+class tab_DAQ_control(QtCore.QObject):
+
+    daq_readout_stopped = QtCore.pyqtSignal()
 
     def __init__(self, run_config, status, MainWindow):
+        super().__init__()
         self.run_config = run_config
         self.status = status
         self.setup_UI(MainWindow)
@@ -67,8 +70,6 @@ class tab_DAQ_control(object):
         self.worker_startDAQ.finished.connect(self.thread_startDAQ.quit)
         self.worker_startDAQ.finished.connect(self.worker_startDAQ.deleteLater)
         
-        self.thread_startDAQ.finished.connect(self.thread_startDAQ.deleteLater)
-
         # Step 6: Start the thread
         self.thread_startDAQ.start()
         
@@ -79,6 +80,8 @@ class tab_DAQ_control(object):
 
     def DAQ_stopped(self):
         self.pushButton_single_plot.setEnabled(False)
+        print("Emitting DAQ readout stopped")
+        self.daq_readout_stopped.emit()
 
     def single_plot(self):
         self.update_plot(self.worker_startDAQ.single_plot())

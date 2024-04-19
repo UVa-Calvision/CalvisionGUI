@@ -7,7 +7,7 @@ import os
 # Run can be called multiple times (makes new process internally)
 class CallProcess:
     def __init__(self):
-        pass
+        self.proc = None
 
     # Runs the process and prints the stdout and stderr
     # This is blocking, but you may call message and other methods
@@ -33,6 +33,9 @@ class CallProcess:
                 raise Exception("Command Error {}".format(self.proc.returncode))
         except Exception as e:
             print(e)
+            return False
+        
+        return True
 
     # Check if the process has started and is running
     def running(self):
@@ -89,24 +92,28 @@ class ClientVerboseProcess(CallProcess):
         print(line)
 
     def run(self, ip_address, port, command):
-        CallProcess.run(self, "/home/uva/local_install/bin/client {} {} -c '{}'".format(ip_address, port, command))
+        return CallProcess.run(self, "/home/uva/local_install/bin/client {} {} -c '{}'".format(ip_address, port, command))
 
+    def execute(ip_address, port, command):
+        return ClientVerboseProcess().run(ip_address, port, command)
 
 # Call Rasperry Pi client and supress its output. Sets self.result
 # to the returned data from the Pi if available (None otherwise)
 class ClientReadProcess(CallProcess):
     def __init__(self):
-        self.result = None
+        self.result = ""
 
     def handle_output(self, line):
-        self.result = line
+        self.result += line
 
     def run(self, ip_address, port, command):
-        CallProcess.run(self, "/home/uva/local_install/bin/client {} {} -b '{}'".format(ip_address, port, command))
+        return CallProcess.run(self, "/home/uva/local_install/bin/client {} {} -b '{}'".format(ip_address, port, command))
 
     # Static method for quickly calling the process and getting the result
     def execute(ip_address, port, command):
-        proc = CallProcess()
-        proc.run(ip_address, port, command)
-        return proc.result
+        proc = ClientReadProcess()
+        if proc.run(ip_address, port, command):
+            return proc.result
+        else:
+            return None
 

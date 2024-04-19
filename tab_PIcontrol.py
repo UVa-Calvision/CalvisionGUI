@@ -10,9 +10,13 @@ from MonitorPlots import *
 
 
 
-class tab_PIcontrol(object):
+class tab_PIcontrol(QtCore.QObject):
+
+    low_voltage_set = QtCore.pyqtSignal(float)
+    high_voltage_set = QtCore.pyqtSignal(float)
 
     def __init__(self, run_config, run_status, MainWindow):
+        super().__init__()
         self.run_config = run_config
         self.status = run_status
         self.setup_UI(MainWindow)
@@ -42,7 +46,7 @@ class tab_PIcontrol(object):
 
         column += 1
         self.label = QtWidgets.QLabel()
-        self.label.setText("LED Low V (mV)")
+        self.label.setText("LED Low V (V)")
         self.gridLayout.addWidget(self.label, row, column, 1, 1)
 
         row += 1
@@ -70,7 +74,7 @@ class tab_PIcontrol(object):
         row += 1
         column = 2
         self.label = QtWidgets.QLabel()
-        self.label.setText("LED High V (mV)")
+        self.label.setText("LED High V (V)")
         self.gridLayout.addWidget(self.label, row, column, 1, 1)
 
         column += 1
@@ -174,32 +178,39 @@ class tab_PIcontrol(object):
 
 
     def set_LED_lowvoltage_by_client(self):
-        self.callclient("VoltageControl LowVoltageSet " + self.lineEdit_low_voltage.text())
+        voltage = float(self.lineEdit_low_voltage.text())
+        if self.callclient("VoltageControl LowVoltageSet {}".format(voltage * 1000)):
+            self.low_voltage_set.emit(voltage)
 
     def set_LED_highvoltage_by_client(self):
-        self.callclient("VoltageControl HighVoltageSet " + self.lineEdit_high_voltage.text())
+        voltage = float(self.lineEdit_high_voltage.text())
+        if self.callclient("VoltageControl HighVoltageSet {}".format(voltage * 1000)):
+            self.high_voltage_set.emit(voltage)
 
     def read_client_float(self, cmd_args):
-        x = ClientReadProcess().run(self.lineEdit_ipaddress.text(), self.lineEdit_port.text(), cmd_args)
+        x = ClientReadProcess.execute(self.lineEdit_ipaddress.text(), self.lineEdit_port.text(), cmd_args)
         try:
             return float(x)
         except Exception as e:
             return None
 
     def callclient(self,cmd_args):
-        ClientVerboseProcess().run(self.lineEdit_ipaddress.text(), self.lineEdit_port.text(), cmd_args)
+        return ClientVerboseProcess.execute(self.lineEdit_ipaddress.text(), self.lineEdit_port.text(), cmd_args)
 
     def update_plot(self):
         # request humidity control to start a read; will actually read out later
         self.read_client_float('HumidityControl RequestRead')
 
-        y = self.read_client_float('TemperatureRead Read 0')
-        if y != None:
-            self.monitor_plots.add_point(0, y)
+        QtCore.QThread.currentThread().msleep(75)
 
-        y = self.read_client_float('TemperatureRead Read 1')
-        if y != None:
-            self.monitor_plots.add_point(1, y)
+        # y = self.read_client_float('TemperatureRead Read 0')
+        # if y != None:
+        #     self.monitor_plots.add_point(0, y)
+
+        # y = self.read_client_float('TemperatureRead Read 1')
+        # if y != None:
+        #     self.monitor_plots.add_point(1, y)
+
 
         y = self.read_client_float('HumidityControl ReadTemperature')
         if y != None:

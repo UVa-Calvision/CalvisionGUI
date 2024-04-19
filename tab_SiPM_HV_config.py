@@ -125,7 +125,7 @@ class tab_SiPM_HV_config(object):
 
         column += 1
         self.lineEdit_MaxI_dev1 = QtWidgets.QLineEdit()
-        self.lineEdit_MaxI_dev1.setText('10.0')
+        self.lineEdit_MaxI_dev1.setText('0.5')
         self.gridLayout.addWidget(self.lineEdit_MaxI_dev1,row, column, 1, 1)
 
         column += 1
@@ -176,7 +176,7 @@ class tab_SiPM_HV_config(object):
 
         column += 1
         self.lineEdit_MaxI_dev2 = QtWidgets.QLineEdit()
-        self.lineEdit_MaxI_dev2.setText('10.0')
+        self.lineEdit_MaxI_dev2.setText('0.5')
         self.gridLayout.addWidget(self.lineEdit_MaxI_dev2,row, column, 1, 1)
 
         column += 1
@@ -260,8 +260,11 @@ class tab_SiPM_HV_config(object):
         # set voltage target to 40V
         self.hv.set_parameter(A7585D_REG.V_TARGET, float(self.lineEdit_TargetV_dev1.text()))
 
-        # set max voltage 1mA
-        self.hv.set_parameter(A7585D_REG.MAX_I, float(self.lineEdit_MaxI_dev1.text()))
+        # set max current 1mA
+        if float(self.lineEdit_MaxI_dev1.text()) > 0.5:
+            print("Maximum current should not go above 0.5 mA for SiPM safety!")
+        else:
+            self.hv.set_parameter(A7585D_REG.MAX_I, float(self.lineEdit_MaxI_dev1.text()))
 
         # set max voltage (compliance) to 50V
         self.hv.set_parameter(A7585D_REG.MAX_V, float(self.lineEdit_MaxV_dev1.text()))
@@ -322,7 +325,10 @@ class tab_SiPM_HV_config(object):
         self.hv2.set_parameter(A7585D_REG.V_TARGET, float(self.lineEdit_TargetV_dev2.text()))
 
         # set max voltage 1mA
-        self.hv2.set_parameter(A7585D_REG.MAX_I, float(self.lineEdit_MaxI_dev2.text()))
+        if float(self.lineEdit_MaxI_dev2.text()) > 0.5:
+            print("Max current should not go above 0.5 mA for SiPM safety!")
+        else:
+            self.hv2.set_parameter(A7585D_REG.MAX_I, float(self.lineEdit_MaxI_dev2.text()))
 
         # set max voltage (compliance) to 50V
         self.hv2.set_parameter(A7585D_REG.MAX_V, float(self.lineEdit_MaxV_dev2.text()))

@@ -8,6 +8,8 @@ common_config_dict = {
     "ENABLED_FAST_TRIGGER_DIGITIZING": ("Digitize Trigger", 0, ["YES", "NO"]),
     "DRS4_FREQUENCY": ("Digitizer Frequency", 2, ["5 GHz", "2.5 GHz", "1 GHz", "750 MHz"]),
     "FPIO_LEVEL": ("Front Panel IO Level", 0, ["NIM", "TTL"]),
+    "MAX_NUM_EVENTS_BLT": ("Max Number of Events Per Readout", 1000, {"min": 0, "max": 1023}),
+    "MAX_READOUT_COUNT": ("Max Event Readout Count (0 = no max)", 0, {"min": 0, "max": 60 * 60 * 5000}),
 }
 
 group_config_dict = {
@@ -154,7 +156,6 @@ class tab_digitizer_config(object):
         importBrowse_button.clicked.connect(lambda: self.open_file(self.importPath_textbox, mode = QtWidgets.QFileDialog.AcceptOpen))
         exportLayout.addWidget(importBrowse_button, row, column)
 
-
         column += 1
         importButton = QtWidgets.QPushButton()
         importButton.setText("Import")
@@ -173,9 +174,11 @@ class tab_digitizer_config(object):
             if len(fileNames) > 0:
                 path_textbox.setText(fileNames[0])
 
-
     def import_config(self):
-        with open(self.importPath_textbox.displayText(), 'r') as infile:
+        self.load_config(self.importPath_textbox.displayText())
+
+    def load_config(self, path):
+        with open(path, 'r') as infile:
             section = 0
             for line in infile:
                 line = line.strip()
@@ -235,14 +238,13 @@ class tab_digitizer_config(object):
                 header = section_headers[1+g]
                 out.write(header + "\n")
 
-                enable_input = 'ENABLE_INPUT'
-                out.write('{} {}\n'.format(enable_input, self.device_input_list[g+1][enable_input].currentText()))
-
-                grp_ch_offset = "GRP_CH_DC_OFFSET"
-                for c in range(8):
-                    grp_ch_offset += " " + str(self.device_input_list[g+1]["CH{}_DC_OFFSET".format(c)].value())
-                out.write(grp_ch_offset + "\n")
-
+                for key in group_config_dict:
+                    widget = self.device_input_list[1+g][key]
+                    if type(widget) is QtWidgets.QComboBox:
+                        out.write('{} {}\n'.format(key, widget.currentText()))
+                    elif type(widget) is QtWidgets.QSpinBox:
+                        out.write('{} {}\n'.format(key, widget.value()))
+                       
             out.write(section_headers[trigger_section] + "\n")
             if self.device_input_list[trigger_section]["TYPE"].currentText() == "Custom":
                 dc_offset = "DC_OFFSET"

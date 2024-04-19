@@ -27,9 +27,12 @@ class CalibrateProcess(CallProcess):
         CalibrateProcess().run(source_conda + "/home/uva/local_install/bin/calibrate")
 
 
-class tab_calibrate(object):
+class tab_calibrate(QtCore.QObject):
+
+    pulser_enabled = QtCore.pyqtSignal(bool)
     
     def __init__(self, MainWindow):
+        super().__init__()
         self.setup_UI(MainWindow)
 
     def setup_UI(self, MainWindow):
@@ -54,7 +57,7 @@ class tab_calibrate(object):
         self.pushButton_pulseOff.setText("Pulser Off")
         self.sectionLayout.addWidget(self.pushButton_pulseOff, row, column, 1, 1)
         self.pushButton_pulseOff.clicked.connect(self.pulse_off)
-        self.pushButton_pulseOff.setEnabled(False)
+        self.pushButton_pulseOff.setEnabled(True)
 
 
     def calibrate_DRS(self):
@@ -62,10 +65,8 @@ class tab_calibrate(object):
 
     def pulse_on(self):
         PulserProcess.execute(True)
-        self.pushButton_pulseOn.setEnabled(False)
-        self.pushButton_pulseOff.setEnabled(True)
+        self.pulser_enabled.emit(True)
 
     def pulse_off(self):
         PulserProcess.execute(False)
-        self.pushButton_pulseOn.setEnabled(True)
-        self.pushButton_pulseOff.setEnabled(False)
+        self.pulser_enabled.emit(False)

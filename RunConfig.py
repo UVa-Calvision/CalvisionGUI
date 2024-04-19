@@ -3,14 +3,14 @@ import sys
 import json
 
 crystals = [
-    "PbF2_6mm",
-    "BGO_6mm",
-    "PWO_6mm",
+    "PbF2_6cm",
+    "BGO_6cm",
+    "PWO_6cm",
     "DSB-3",
     "ABSZL",
     "ABSC5",
-    "BGO_18mm",
-    "PWO_18mm",
+    "BGO_18cm",
+    "PWO_18cm",
     "SICBS01309",
 ]
 
@@ -19,10 +19,22 @@ sipm_types = [
     "Broadband"
 ]
 
-filter_types = [
+front_filter_types = [
     "None",
+    "ND 1",
+    "ND 1.3"
+]
+
+back_filter_types = [
+    "None",
+    "Everix 560",
+    "Kodak 560",
+    "Kodak 580",
+    "O560",
+    "R640 1mm",
+    "R640 2.5mm",
+    "RG610",
     "U330",
-    "R64"
 ]
 
 angles = [str(x) for x in [
@@ -40,9 +52,9 @@ angles = [str(x) for x in [
 config_options = {
     'Crystal': crystals,
     'Front SiPM': sipm_types,
-    'Front Filter': filter_types,
+    'Front Filter': front_filter_types,
     'Back SiPM': sipm_types,
-    'Back Filter': filter_types,
+    'Back Filter': back_filter_types,
     'Angle': angles,
 }
 
