@@ -47,7 +47,7 @@ class Worker_startDAQ(QObject,CallProcess):
                 times.append(t[0])
 
             channels = []
-            for c in range(8):
+            for c in range(10):
                 channels.append([])
                 raw_channel = os.read(fd, 4 * 1024)
                 for t in struct.iter_unpack('@f', raw_channel):

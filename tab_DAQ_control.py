@@ -60,6 +60,14 @@ class tab_DAQ_control(QtCore.QObject):
             label.setText("Rear {}".format(i))
             enableLayout.addWidget(label, row, column + 4 + 1 + i, 1, 1, QtCore.Qt.AlignHCenter)
 
+        label = QtWidgets.QLabel()
+        label.setText("MCP Supply")
+        enableLayout.addWidget(label, row, column + 9, 1, 1, QtCore.Qt.AlignHCenter)
+
+        label = QtWidgets.QLabel()
+        label.setText("Scintillation Trigger")
+        enableLayout.addWidget(label, row, column + 10, 1, 1, QtCore.Qt.AlignHCenter)
+
 
         self.channel_enable_checkboxes = []
 
@@ -67,40 +75,44 @@ class tab_DAQ_control(QtCore.QObject):
         label = QtWidgets.QLabel()
         label.setText("High Gain")
         enableLayout.addWidget(label, row, column, 1, 1)
-        for i in range(8):
+        for i in range(10):
             checkbox = QtWidgets.QCheckBox()
             checkbox.setChecked(True)
             checkbox.clicked.connect(self.channel_enable_changed)
             enableLayout.addWidget(checkbox, row, column + 1 + i, 1, 1, QtCore.Qt.AlignHCenter)
             self.channel_enable_checkboxes.append(checkbox)
+
 
         row += 1
         label = QtWidgets.QLabel()
         label.setText("Low Gain")
         enableLayout.addWidget(label, row, column, 1, 1)
-        for i in range(8):
+        for i in range(10):
             checkbox = QtWidgets.QCheckBox()
             checkbox.setChecked(True)
             checkbox.clicked.connect(self.channel_enable_changed)
             enableLayout.addWidget(checkbox, row, column + 1 + i, 1, 1, QtCore.Qt.AlignHCenter)
             self.channel_enable_checkboxes.append(checkbox)
-
         
 
 
         self.monitor_plots = MonitorPlots(self.status)
-        self.monitor_plots.make_waveform_plot('HG Waveform', 'HG{}', 8)
+        self.monitor_plots.make_waveform_plot('HG Waveform', 'HG{}', 10)
         legend = pg.LegendItem(horSpacing = 0, frame = False, colCount = 1)
         for i in range(4):
             legend.addItem(self.monitor_plots.lines[i   ], 'FH{}'.format(i))
             legend.addItem(self.monitor_plots.lines[i+ 4], 'BH{}'.format(i))
+        legend.addItem(self.monitor_plots.lines[8], 'MCP HG')
+        legend.addItem(self.monitor_plots.lines[9], 'Scint. HG')
         self.monitor_plots.layoutWidget.addItem(legend)
 
-        self.monitor_plots.make_waveform_plot('LG Waveform', 'LG{}', 8)
+        self.monitor_plots.make_waveform_plot('LG Waveform', 'LG{}', 10)
         legend = pg.LegendItem(horSpacing = 0, frame = False, colCount = 1)
         for i in range(4):
             legend.addItem(self.monitor_plots.lines[i+ 8], 'FL{}'.format(i))
             legend.addItem(self.monitor_plots.lines[i+12], 'BL{}'.format(i))
+        legend.addItem(self.monitor_plots.lines[18], 'MCP LG')
+        legend.addItem(self.monitor_plots.lines[19], 'Scint. LG')
         self.monitor_plots.layoutWidget.addItem(legend)
 
         self.monitor_plots.request_monitor_data.connect(self.single_plot)
@@ -146,9 +158,9 @@ class tab_DAQ_control(QtCore.QObject):
     def update_plot(self, waveform_data):  
         hg_times, hg_channels, lg_times, lg_channels = waveform_data
         if hg_times != None and hg_channels != None:
-            for i in range(8):
+            for i in range(10):
                 self.monitor_plots.set_data(i, hg_times, hg_channels[i])
         
         if lg_times != None and lg_channels != None:
-            for i in range(8):
+            for i in range(10):
                 self.monitor_plots.set_data(8+i, lg_times, lg_channels[i])
