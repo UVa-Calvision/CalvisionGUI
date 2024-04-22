@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 common_config_dict = {
+    "ACQUISITION_MODE": ("Acquisition Mode", 0, ["SW_CONTROLLED", "S_IN_CONTROLLED", "FIRST_TRG_CONTROLLED"]),
     "POST_TRIGGER": ("Post Trigger", 50, {"min": 0, "max": 100}),
     "PULSE_POLARITY": ("Pulse Polarity", 0, ["POSITIVE", "NEGATIVE"]),
     "EXTERNAL_TRIGGER": ("Ext. Trigger", 0, ["DISABLED", "ACQUISITION_ONLY", "ACQUISITION_AND_TRGOUT"]),
@@ -9,7 +10,7 @@ common_config_dict = {
     "DRS4_FREQUENCY": ("Digitizer Frequency", 2, ["5 GHz", "2.5 GHz", "1 GHz", "750 MHz"]),
     "FPIO_LEVEL": ("Front Panel IO Level", 0, ["NIM", "TTL"]),
     "MAX_NUM_EVENTS_BLT": ("Max Number of Events Per Readout", 1000, {"min": 0, "max": 1023}),
-    "MAX_READOUT_COUNT": ("Max Event Readout Count (0 = no max)", 0, {"min": 0, "max": 60 * 60 * 5000}),
+    "MAX_READOUT_COUNT": ("Max Event Readout Count (0 = no max)", 0, {"min": 0, "max": 50000}),
 }
 
 group_config_dict = {
@@ -108,6 +109,10 @@ class tab_digitizer_config(object):
 
         for i in range(len(section_headers)):
             configLayout.addWidget(self.setupConfigureUI_section(i))
+
+
+        self.device_input_list[common_section]['MAX_NUM_EVENTS_BLT'].setEnabled(False)
+        self.device_input_list[common_section]['MAX_READOUT_COUNT'].setEnabled(False)
     
         self.device_input_list[trigger_section]['TYPE'].currentTextChanged.connect(self.trigger_type_changed)
         self.trigger_type_changed(self.device_input_list[trigger_section]['TYPE'].currentText())

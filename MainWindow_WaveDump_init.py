@@ -47,6 +47,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     #os.putenv("QT_SCALE_FACTOR","1.8")
     myapp = StartQT5()
+    app.aboutToQuit.connect(myapp.ui.power_down)
     myapp.show()
     # # sys.stderr = OutLog(myapp.ui.textBrowser, sys.stderr)
     # # sys.stdout = OutLog(myapp.ui.textBrowser, sys.stdout)

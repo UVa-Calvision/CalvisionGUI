@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
 from RunConfig import *
 import datetime
+import json
 
 
 class tab_run_control(QtCore.QObject):
@@ -65,21 +66,71 @@ class tab_run_control(QtCore.QObject):
         self.repeat_warning = QtWidgets.QLabel()
         runLayout.addRow(self.repeat_warning)
 
+        subWindow = QtWidgets.QWidget()
+        subWindow.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        subLayout = QtWidgets.QHBoxLayout(subWindow)
+        subLayout.setSpacing(20)
+        sectionLayout.addWidget(subWindow)
 
-        statusSectionLabel = QtWidgets.QLabel()
-        statusSectionLabel.setText("----- Run Status")
-        sectionLayout.addWidget(statusSectionLabel)
 
         statusWindow = QtWidgets.QWidget()
-        statusWindow.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        statusWindow.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.MinimumExpanding)
         statusLayout = QtWidgets.QFormLayout(statusWindow)
-        sectionLayout.addWidget(statusWindow)
+        statusLayout.setSpacing(8)
+        statusLayout.setHorizontalSpacing(30)
+        subLayout.addWidget(statusWindow)
 
+        statusSectionLabel = QtWidgets.QLabel()
+        statusSectionLabel.setText("Run Status")
+        statusLayout.addRow(statusSectionLabel)
+        statusLayout.setAlignment(statusSectionLabel, QtCore.Qt.AlignHCenter)
 
         self.statusLabels = {}
         for name in tab_run_control.status_fields:
             self.statusLabels[name] = QtWidgets.QLabel()
             statusLayout.addRow(name + ":", self.statusLabels[name])
+
+        
+        configWindow = QtWidgets.QWidget()
+        configWindow.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        configLayout = QtWidgets.QFormLayout(configWindow)
+        subLayout.addWidget(configWindow)
+
+        self.numEvents_spinbox = QtWidgets.QSpinBox()
+        self.numEvents_spinbox.setRange(0, 50000)
+        self.numEvents_spinbox.setValue(20000)
+        self.numEvents_spinbox.setSpecialValueText("No max")
+        self.numEvents_spinbox.valueChanged.connect(self.update_time)
+        configLayout.addRow("Number of events to readout", self.numEvents_spinbox)
+
+        self.estimatedTriggerRate_spinbox = QtWidgets.QDoubleSpinBox()
+        self.estimatedTriggerRate_spinbox.setSuffix(' kHz')
+        self.estimatedTriggerRate_spinbox.setRange(0, 5)
+        self.estimatedTriggerRate_spinbox.setValue(1)
+        self.estimatedTriggerRate_spinbox.setSpecialValueText("No trigger")
+        self.estimatedTriggerRate_spinbox.valueChanged.connect(self.update_time)
+        configLayout.addRow("Estimated trigger rate", self.estimatedTriggerRate_spinbox)
+        
+        self.estimatedTime_spinbox = QtWidgets.QDoubleSpinBox()
+        self.estimatedTime_spinbox.setSuffix(' min')
+        self.estimatedTime_spinbox.setDecimals(2)
+        self.estimatedTime_spinbox.setValue(20000.0 / 1000.0 / 60.0)
+        self.estimatedTime_spinbox.setEnabled(False)
+        self.estimatedTime_spinbox.setSpecialValueText("Forever")
+        # self.estimatedTime_spinbox.valueChanged.connect(self.update_num_events)
+        configLayout.addRow("Estimated readout duration", self.estimatedTime_spinbox)
+
+        self.loadDevices_button = QtWidgets.QPushButton()
+        self.loadDevices_button.setText("Load All Devices")
+        configLayout.addRow(self.loadDevices_button)
+
+        self.powerDown_button = QtWidgets.QPushButton()
+        self.powerDown_button.setText("Power Down All Devices")
+        configLayout.addRow(self.powerDown_button)
+
+        self.defaultDevices_button = QtWidgets.QPushButton()
+        self.defaultDevices_button.setText("Set Device Defaults")
+        configLayout.addRow(self.defaultDevices_button)
 
 
         runButtonWindow = QtWidgets.QWidget()
@@ -152,3 +203,17 @@ class tab_run_control(QtCore.QObject):
         else:
             self.config_angleLabel.setText(str(angle))
         self.run_config_changed.emit()
+
+    def save_run_stats(self, filename):
+        try:
+            with open(filename, 'w') as out:
+                out.write(json.dumps(self.status_values, indent=4))
+        except Exception as e:
+            print("Failed to write run stats to {}: {}".format(filename, e))
+
+    def update_time(self):
+        if self.numEvents_spinbox.value() <= 0 or self.estimatedTriggerRate_spinbox.value() <= 0:
+            self.estimatedTime_spinbox.setValue(0)
+        else:
+            self.estimatedTime_spinbox.setValue(self.numEvents_spinbox.value() / (self.estimatedTriggerRate_spinbox.value() * 1000) / 60.0)
+

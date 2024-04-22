@@ -37,33 +37,49 @@ class tab_calibrate(QtCore.QObject):
         self.setup_UI(MainWindow)
 
     def setup_UI(self, MainWindow):
-        self.sectionLayout = QtWidgets.QGridLayout(MainWindow)
+        sectionLayout = QtWidgets.QHBoxLayout(MainWindow)
 
-        row = 0
-        column = 0
-        self.pushButton_calibrateDRS = QtWidgets.QPushButton()
-        self.pushButton_calibrateDRS.setText("Calibrate DRS's")
-        self.sectionLayout.addWidget(self.pushButton_calibrateDRS, row, column, 1, 1)
-        self.pushButton_calibrateDRS.clicked.connect(self.calibrate_DRS)
+        calibrateWindow = QtWidgets.QWidget()
+        calibrateLayout = QtWidgets.QFormLayout(calibrateWindow)
+        sectionLayout.addWidget(calibrateWindow)
 
-        column += 1
-        self.pushButton_resetDRS = QtWidgets.QPushButton()
-        self.pushButton_resetDRS.setText("Reset DRS's")
-        self.pushButton_resetDRS.clicked.connect(Reset_DAQ.execute)
-        self.sectionLayout.addWidget(self.pushButton_resetDRS, row, column, 1, 1)
+        calibrateLabel = QtWidgets.QLabel()
+        calibrateLabel.setText("Calibration")
+        calibrateLayout.addRow(calibrateLabel)
+        calibrateLayout.setAlignment(calibrateLabel, QtCore.Qt.AlignHCenter)
 
+        pushButton_calibrateDRS = QtWidgets.QPushButton()
+        pushButton_calibrateDRS.setText("Calibrate DRS's")
+        calibrateLayout.addRow(pushButton_calibrateDRS)
+        pushButton_calibrateDRS.clicked.connect(self.calibrate_DRS)
 
-        column += 1
+        pushButton_resetDRS = QtWidgets.QPushButton()
+        pushButton_resetDRS.setText("Reset DRS's")
+        pushButton_resetDRS.clicked.connect(Reset_DAQ.execute)
+        calibrateLayout.addWidget(pushButton_resetDRS)
+
+        self.calibrateOffset_button = QtWidgets.QPushButton()
+        self.calibrateOffset_button.setText("Calibrate DRS channel offsets")
+        calibrateLayout.addWidget(self.calibrateOffset_button)
+
+        pulserWindow = QtWidgets.QWidget()
+        pulserLayout = QtWidgets.QFormLayout(pulserWindow)
+        sectionLayout.addWidget(pulserWindow)
+
+        pulserLabel = QtWidgets.QLabel()
+        pulserLabel.setText("Pulser")
+        pulserLayout.addRow(pulserLabel)
+        pulserLayout.setAlignment(pulserLabel, QtCore.Qt.AlignHCenter)
+
         self.pushButton_pulseOn = QtWidgets.QPushButton()
         self.pushButton_pulseOn.setText("Pulser On")
-        self.sectionLayout.addWidget(self.pushButton_pulseOn, row, column, 1, 1)
+        pulserLayout.addWidget(self.pushButton_pulseOn)
         self.pushButton_pulseOn.clicked.connect(self.pulse_on)
         self.pushButton_pulseOn.setEnabled(True)
 
-        column += 1
         self.pushButton_pulseOff = QtWidgets.QPushButton()
         self.pushButton_pulseOff.setText("Pulser Off")
-        self.sectionLayout.addWidget(self.pushButton_pulseOff, row, column, 1, 1)
+        pulserLayout.addWidget(self.pushButton_pulseOff)
         self.pushButton_pulseOff.clicked.connect(self.pulse_off)
         self.pushButton_pulseOff.setEnabled(True)
 
@@ -79,3 +95,6 @@ class tab_calibrate(QtCore.QObject):
     def pulse_off(self):
         PulserProcess.execute(False)
         self.pulser_enabled.emit(False)
+
+    def power_down(self):
+        self.pulse_off()

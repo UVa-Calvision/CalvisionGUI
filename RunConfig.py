@@ -16,7 +16,7 @@ crystals = [
 
 sipm_types = [
     "Hamamatsu",
-    "Broadband"
+    "Broadcom"
 ]
 
 front_filter_types = [
@@ -58,7 +58,7 @@ config_options = {
     'Angle': angles,
 }
 
-staging_area = '/home/uva/daq_staging'
+staging_area = '.'
 
 class RunConfig:
     def __init__(self):
@@ -160,3 +160,9 @@ class RunConfig:
 
     def lg_dump_file(self):
         return self.run_directory() + "/dump_LG"
+
+    def run_stats_begin_file(self):
+        return self.run_directory() + "/begin_stats.json"
+
+    def run_stats_end_file(self):
+        return self.run_directory() + "/end_stats.json"
