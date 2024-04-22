@@ -58,7 +58,7 @@ config_options = {
     'Angle': angles,
 }
 
-staging_area = '.'
+staging_area = '/home/uva/daq_staging'
 
 class RunConfig:
     def __init__(self):
