@@ -14,7 +14,7 @@ class PulserProcess(CallProcess):
         postfix = "on"
         if not on:
             postfix = "off"
-        PulserProcess().run("python3 /home/uva/local_install/python/pulse{}.py".format(postfix))
+        PulserProcess().run("python3 /home/uva/local_install/python/LED_{}.py".format(postfix))
 
 class CalibrateProcess(CallProcess):
     def __init__(self):
