@@ -15,8 +15,8 @@ crystals = [
 ]
 
 sipm_types = [
-    "Hamamatsu",
-    "Broadband"
+    "Broadcom",
+    "Hamamatsu"
 ]
 
 front_filter_types = [
