@@ -61,7 +61,7 @@ class tab_DAQ_control(QtCore.QObject):
             enableLayout.addWidget(label, row, column + 4 + 1 + i, 1, 1, QtCore.Qt.AlignHCenter)
 
         label = QtWidgets.QLabel()
-        label.setText("MCP Supply")
+        label.setText("MCP")
         enableLayout.addWidget(label, row, column + 9, 1, 1, QtCore.Qt.AlignHCenter)
 
         label = QtWidgets.QLabel()
