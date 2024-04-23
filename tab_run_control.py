@@ -14,7 +14,7 @@ class InhibitProcess(CallProcess):
         postfix = "on"
         if not on:
             postfix = "off"
-        # return InhibitProcess().run("python3 /home/uva/local_install/python/Inhibit_{}.py".format(postfix))
+        return InhibitProcess().run("python3 /home/uva/local_install/python/Inhibit_{}.py".format(postfix))
 
 
 class tab_run_control(QtCore.QObject):
