@@ -1,6 +1,20 @@
 from PyQt5 import QtWidgets, QtCore
 from RunConfig import *
+from CallProcess import *
 import datetime
+
+class InhibitProcess(CallProcess):
+    def __init__(self):
+        pass
+
+    def handle_output(self, line):
+        print(line)
+
+    def execute(on):
+        postfix = "on"
+        if not on:
+            postfix = "off"
+        InhibitProcess().run("python3 /home/uva/local_install/python/Inhibit_{}.py".format(postfix))
 
 
 class tab_run_control(QtCore.QObject):
@@ -20,13 +34,26 @@ class tab_run_control(QtCore.QObject):
         "LED Voltage",
         "BJT Bias",
         "Pulser Enabled",
+        "DAQ Inhibit",
     ]
 
     
     run_config_changed = QtCore.pyqtSignal()
     begin_run = QtCore.pyqtSignal()
     end_run = QtCore.pyqtSignal()
+    inhibit_enable = QtCore.pyqtSignal(bool)
 
+    def inhibit_on(self):
+        InhibitProcess.execute(True)
+        self.inhibit_enable.emit(True)
+
+    
+    def inhibit_off(self):
+        InhibitProcess.execute(False)
+        self.inhibit_enable.emit(False)
+
+       
+    
     def __init__(self, run_config, run_status, MainWindow):
         super().__init__()
         self.run_config = run_config
@@ -98,13 +125,22 @@ class tab_run_control(QtCore.QObject):
         self.endRunButton.clicked.connect(self.end_run)
         self.endRunButton.setEnabled(False)
         runButtonLayout.addWidget(self.endRunButton)
+        
+            
+        self.inhibitDAQButton = QtWidgets.QPushButton()
+        self.inhibitDAQButton.setText("Inhibit DAQ")
+        self.inhibitDAQButton.clicked.connect(self.end_run)
+        self.inhibitDAQButton.setEnabled(True)
+        runButtonLayout.addWidget(self.inhibitDAQButton)
 
         # Connect signals and slots
 
         self.run_config_changed.connect(self.update_config)
         self.begin_run.connect(self.begin_run_button)
         self.end_run.connect(self.end_run_button)
-
+        self.inhibit_enable.connect(self.inhibit_daq_button)
+        
+        
         # Update state
 
         self.update_config()
@@ -123,6 +159,18 @@ class tab_run_control(QtCore.QObject):
         for box in self.config_comboBoxes:
             self.config_comboBoxes[box].setEnabled(True)
 
+    
+    def inhibit_daq_button(self):
+        if self.inhibit_enabled:
+            self.inhibitDAQButton.setText("Disable DAQ")
+            self.inhibit_enabled=False
+        else:
+            self.inhibitDAQButton.setText("Enable DAQ")
+            self.inhibit_enabled=True
+        for box in self.config_comboBoxes:
+            self.config_comboBoxes[box].setEnabled(False)
+
+            
     def update_config(self):
         config_values = {}
         for key in self.config_comboBoxes:

@@ -43,6 +43,7 @@ class Ui_MainWindow():
         self.last_bjt_bias = None
         self.last_led_voltage = None
         self.last_pulser_enabled = None
+        self.last_inhibit = None
 
     def setupUi(self, MainWindow):
         
@@ -123,7 +124,8 @@ class Ui_MainWindow():
         self.tab_pi_control_inst.high_voltage_set.connect(self.set_last_bjt_bias)
 
         self.tab_calibrate_inst.pulser_enabled.connect(self.set_last_pulser_enabled)
-
+        self.tab_run_control_inst.inhibit_enable.connect(self.set_last_inhibit_enabled)
+        
         self.tab_rotor_control_inst.angle_changed.connect(self.tab_run_control_inst.update_angle)
 
         # Make sure state is up to date
@@ -156,6 +158,9 @@ class Ui_MainWindow():
     def set_last_pulser_enabled(self, t):
         self.last_pulser_enabled = t
 
+    def set_last_inhibit_enabled(self, t):
+        self.last_inhibit_enabled = t
+        
     def check_repeat(self):
         self.tab_previous_runs_inst.update_run_table()
         exists = self.tab_previous_runs_inst.config_exists(self.run_config.to_dict())
@@ -231,5 +236,9 @@ class Ui_MainWindow():
         else:
             self.tab_run_control_inst.status_values['Pulser Enabled'] = str(self.last_pulser_enabled)
 
+        if self.last_inhibit == None:
+            self.tab_run_control_inst.status_values['Inhibit Enabled'] = 'No last set of pulser'
+        else:
+            self.tab_run_control_inst.status_values['Inhibit Enabled'] = str(self.last_inhibit_enabled)
         
         self.tab_run_control_inst.update_status_all()
