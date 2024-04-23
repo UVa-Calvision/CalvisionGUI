@@ -62,7 +62,7 @@ class tab_SiPM_HV_config(object):
 
         column += 1
         self.label_vol = QtWidgets.QLabel()
-        self.label_vol.setText("Out Volt (V)")
+        self.label_vol.setText("SiPM Bias (V)")
         self.gridLayout.addWidget(self.label_vol, row, column, 1, 1)
 
         column += 1
