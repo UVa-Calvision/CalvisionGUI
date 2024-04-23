@@ -87,7 +87,7 @@ class tab_PIcontrol(QtCore.QObject):
         row += 1
         column = 2
         self.lineEdit_high_voltage = QtWidgets.QLineEdit()
-        self.lineEdit_high_voltage.setText('0')
+        self.lineEdit_high_voltage.setText('5')
         self.gridLayout.addWidget(self.lineEdit_high_voltage, row, column, 1, 1)
 
         column += 1
