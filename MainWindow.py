@@ -43,7 +43,7 @@ class Ui_MainWindow():
         self.last_bjt_bias = None
         self.last_led_voltage = None
         self.last_pulser_enabled = None
-        self.last_inhibit = None
+        self.last_inhibit_enabled = None
 
     def setupUi(self, MainWindow):
         
@@ -159,6 +159,7 @@ class Ui_MainWindow():
         self.last_pulser_enabled = t
 
     def set_last_inhibit_enabled(self, t):
+        print("Last inhibit enabled: {}".format(t))
         self.last_inhibit_enabled = t
         
     def check_repeat(self):
@@ -236,9 +237,9 @@ class Ui_MainWindow():
         else:
             self.tab_run_control_inst.status_values['Pulser Enabled'] = str(self.last_pulser_enabled)
 
-        if self.last_inhibit == None:
-            self.tab_run_control_inst.status_values['Inhibit Enabled'] = 'No last set of pulser'
+        if self.last_inhibit_enabled == None:
+            self.tab_run_control_inst.status_values['DAQ Enabled'] = 'No last set of pulser'
         else:
-            self.tab_run_control_inst.status_values['Inhibit Enabled'] = str(self.last_inhibit_enabled)
+            self.tab_run_control_inst.status_values['DAQ Enabled'] = str(not self.last_inhibit_enabled)
         
         self.tab_run_control_inst.update_status_all()
