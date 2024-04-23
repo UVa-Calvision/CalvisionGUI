@@ -135,7 +135,7 @@ class tab_SiPM_HV_config(object):
 
         column += 1
         self.lineEdit_TargetV_dev1 = QtWidgets.QLineEdit()
-        self.lineEdit_TargetV_dev1.setText('42.5')
+        self.lineEdit_TargetV_dev1.setText('35')
         self.gridLayout.addWidget(self.lineEdit_TargetV_dev1,row, column, 1, 1)
 
         column += 1
@@ -186,7 +186,7 @@ class tab_SiPM_HV_config(object):
 
         column += 1
         self.lineEdit_TargetV_dev2 = QtWidgets.QLineEdit()
-        self.lineEdit_TargetV_dev2.setText('42.5')
+        self.lineEdit_TargetV_dev2.setText('35')
         self.gridLayout.addWidget(self.lineEdit_TargetV_dev2,row, column, 1, 1)
 
         column += 1
