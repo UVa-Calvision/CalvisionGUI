@@ -9,7 +9,7 @@ common_config_dict = {
     "DRS4_FREQUENCY": ("Digitizer Frequency", 2, ["5 GHz", "2.5 GHz", "1 GHz", "750 MHz"]),
     "FPIO_LEVEL": ("Front Panel IO Level", 0, ["NIM", "TTL"]),
     "MAX_NUM_EVENTS_BLT": ("Max Number of Events Per Readout", 1000, {"min": 0, "max": 1023}),
-    "MAX_READOUT_COUNT": ("Max Event Readout Count (0 = no max)", 0, {"min": 0, "max": 60 * 60 * 5000}),
+    "MAX_READOUT_COUNT": ("Max Event Readout Count (0 = no max)", 50000, {"min": 0, "max": 60 * 60 * 5000}),
 }
 
 group_config_dict = {
