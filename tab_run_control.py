@@ -119,7 +119,7 @@ class tab_run_control(QtCore.QObject):
         self.inhibitDaqOnButton = QtWidgets.QPushButton()
         self.inhibitDaqOnButton.setText("Disable DAQ")
         self.inhibitDaqOnButton.clicked.connect(lambda: self.inhibit_enable.emit(True))
-        self.inhibitDaqOnButton.clicked.connect(self.end_run)
+        #self.inhibitDaqOnButton.clicked.connect(self.end_run)
         self.inhibitDaqOnButton.setEnabled(True)
         runButtonLayout.addWidget(self.inhibitDaqOnButton)
 
