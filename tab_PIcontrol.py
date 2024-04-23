@@ -52,7 +52,7 @@ class tab_PIcontrol(QtCore.QObject):
         row += 1
         column = 0
         self.lineEdit_ipaddress = QtWidgets.QLineEdit()
-        self.lineEdit_ipaddress.setText('172.27.137.34')
+        self.lineEdit_ipaddress.setText('192.168.24.101')
         self.gridLayout.addWidget(self.lineEdit_ipaddress,row, column, 1, 1)
 
         column += 1
