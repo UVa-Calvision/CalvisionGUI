@@ -139,7 +139,7 @@ class tab_run_control(QtCore.QObject):
         
         # Update state
 
-        self.update_config()
+        self.run_config_changed.emit()
         self.update_status_all()
 
 

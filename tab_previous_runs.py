@@ -15,8 +15,8 @@ class tab_previous_runs:
         sectionLayout.addWidget(existingLabel)
 
         self.config_table = QtWidgets.QTableWidget()
-        self.config_table.setColumnCount(7)
-        self.config_table.setHorizontalHeaderLabels(["Run Number", "Crystal", "Front SiPM", "Front Filter", "Back SiPM", "Back Filter", "Angle"])
+        self.config_table.setColumnCount(9)
+        self.config_table.setHorizontalHeaderLabels(["Run Number", "Crystal", "Front SiPM", "Front Filter", "Front SiPM Voltage", "Back SiPM", "Back Filter", "Back SiPM Voltage", "Angle"])
         sectionLayout.addWidget(self.config_table)
 
         self.update_run_table()

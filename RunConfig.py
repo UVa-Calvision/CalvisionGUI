@@ -39,15 +39,15 @@ back_filter_types = [
 ]
 
 angles = [str(x) for x in [
+    -90,
+    -45,
+    -30,
+    -15,
     0,
     15,
+    30,
     45,
-    75,
     90,
-    105,
-    135,
-    165,
-    180,
 ]]
 
 config_options = {
@@ -67,8 +67,10 @@ class RunConfig:
         self.crystal = None
         self.front_sipm_type = None
         self.front_filter_type = None
+        self.front_sipm_voltage = None
         self.back_sipm_type = None
         self.back_filter_type = None
+        self.back_sipm_voltage = None
         self.angle = None
 
     # def new_config():
@@ -98,8 +100,10 @@ class RunConfig:
             'Crystal': self.crystal,
             'Front SiPM': self.front_sipm_type,
             'Front Filter': self.front_filter_type,
+            'Front SiPM Voltage': self.front_sipm_voltage,
             'Back SiPM': self.back_sipm_type,
             'Back Filter': self.back_filter_type,
+            'Back SiPM Voltage': self.back_sipm_voltage,
             'Angle': self.angle,
         }
 
@@ -110,6 +114,8 @@ class RunConfig:
         self.back_sipm_type = d['Back SiPM']
         self.back_filter_type = d['Back Filter']
         self.angle = d['Angle']
+        self.front_sipm_voltage = d['Front SiPM Voltage'] if 'Front SiPM Voltage' in d else None
+        self.back_sipm_voltage = d['Back SiPM Voltage'] if 'Back SiPM Voltage' in d else None
 
     def open(run_number):
         config = RunConfig()

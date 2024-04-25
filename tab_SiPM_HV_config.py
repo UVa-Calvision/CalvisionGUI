@@ -362,6 +362,18 @@ class tab_SiPM_HV_config(object):
             print("Error: please check SiPM HV connection")
 
 
+    def front_voltage_run(self):
+        if self.hv.ser != None:
+            return self.hv.get_parameter(A7585D_REG.MON_VOUT)
+        else:
+            return None
+
+    def rear_voltage_run(self):
+        if self.hv2.ser != None:
+            return self.hv2.get_parameter(A7585D_REG.MON_VOUT)
+        else:
+            return None
+
         
 
 

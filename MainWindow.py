@@ -163,6 +163,8 @@ class Ui_MainWindow():
         self.last_inhibit_enabled = t
         
     def check_repeat(self):
+        self.run_config.front_sipm_voltage = self.tab_sipm_hv_config_inst.front_voltage_run()
+        self.run_config.back_sipm_voltage = self.tab_sipm_hv_config_inst.rear_voltage_run()
         self.tab_previous_runs_inst.update_run_table()
         exists = self.tab_previous_runs_inst.config_exists(self.run_config.to_dict())
         self.tab_run_control_inst.update_repeat_warning(exists)
