@@ -33,6 +33,11 @@ class MonitorPlots(QtCore.QObject):
         self.stop_button.setText("Monitor Stop")
         self.stop_button.clicked.connect(self.stop_monitor)
 
+        self.reset_button = QtWidgets.QPushButton()
+        self.reset_button.setEnabled(True)
+        self.reset_button.setText("Reset Monitor")
+        self.reset_button.clicked.connect(self.reset)
+
     def make_plot(self, title, ylabel, use_log = False):
         plot = self.layoutWidget.addPlot()
         plot.setTitle(title, color = 'b', size = '10pt')

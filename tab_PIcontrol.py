@@ -108,6 +108,7 @@ class tab_PIcontrol(QtCore.QObject):
         row += 1
         self.gridLayout.addWidget(self.monitor_plots.start_button, row, 0, 1, 1)
         self.gridLayout.addWidget(self.monitor_plots.stop_button, row, 1, 1, 1)
+        self.gridLayout.addWidget(self.monitor_plots.reset_button, row, 2, 1, 1)
 
 
         dacWindow = QtWidgets.QWidget()
