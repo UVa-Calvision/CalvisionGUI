@@ -12,6 +12,7 @@ crystals = [
     "BGO_18cm",
     "PWO_18cm",
     "SICBS01309",
+    "LED_Calib",
 ]
 
 sipm_types = [
@@ -134,7 +135,7 @@ class RunConfig:
     def find_all():
         run_numbers = [int(name[4:]) for name in os.listdir(staging_area) if name.startswith("run_")]
         configs = []
-        for i in run_numbers:
+        for i in sorted(run_numbers,reverse=True):
             c = RunConfig.open(i)
             if c != None:
                 configs.append(c)
