@@ -7,6 +7,7 @@ from tab_digitizer_config import tab_digitizer_config
 from tab_run_control import tab_run_control
 from tab_previous_runs import tab_previous_runs
 from tab_rotor_control import tab_rotor_control
+from tab_pulser import tab_pulser
 
 from RunConfig import *
 from DeviceList import *
@@ -42,8 +43,6 @@ class Ui_MainWindow():
 
         self.last_bjt_bias = None
         self.last_led_voltage = None
-        self.last_pulser_enabled = None
-        self.last_inhibit_enabled = None
 
     def setupUi(self, MainWindow):
         
@@ -107,6 +106,10 @@ class Ui_MainWindow():
         self.tabWidget.addTab(calibrate_tab, "Calibrate")
         self.tab_calibrate_inst = tab_calibrate(calibrate_tab)
 
+        pulser_tab = QtWidgets.QWidget()
+        self.tabWidget.addTab(pulser_tab, "Pulser")
+        self.tab_pulser_inst = tab_pulser(self.run_config, self.status, pulser_tab)
+
         
         # Connect signals - slots
         self.tab_run_control_inst.run_config_changed.connect(self.check_repeat)
@@ -123,12 +126,16 @@ class Ui_MainWindow():
         self.tab_pi_control_inst.low_voltage_set.connect(self.set_last_led_voltage)
         self.tab_pi_control_inst.high_voltage_set.connect(self.set_last_bjt_bias)
 
-        self.tab_calibrate_inst.pulser_enabled.connect(self.set_last_pulser_enabled)
-        self.tab_run_control_inst.inhibit_enable.connect(self.set_last_inhibit_enabled)
+        self.tab_run_control_inst.inhibit_checkbox.clicked.connect(self.tab_pulser_inst.holdoff_pulser.enable_controls)
+        self.tab_run_control_inst.led_checkbox.clicked.connect(self.tab_pulser_inst.led_pulser.enable_controls)
+
+        self.tab_pulser_inst.led_pulser.control_change.connect(self.tab_run_control_inst.enable_led_controls)
+        self.tab_pulser_inst.holdoff_pulser.control_change.connect(self.tab_run_control_inst.enable_holdoff_controls)
         
         self.tab_rotor_control_inst.angle_changed.connect(self.tab_run_control_inst.update_angle)
 
         # Make sure state is up to date
+        self.tab_pulser_inst.open_checkbox.click()
         self.check_repeat()
         self.update_status()
         self.tab_run_control_inst.update_angle(self.tab_rotor_control_inst.angle)
@@ -155,13 +162,6 @@ class Ui_MainWindow():
     def set_last_bjt_bias(self, v):
         self.last_bjt_bias = v
 
-    def set_last_pulser_enabled(self, t):
-        self.last_pulser_enabled = t
-
-    def set_last_inhibit_enabled(self, t):
-        print("Last inhibit enabled: {}".format(t))
-        self.last_inhibit_enabled = t
-        
     def check_repeat(self):
         self.run_config.front_sipm_voltage = self.tab_sipm_hv_config_inst.front_voltage_run()
         self.run_config.back_sipm_voltage = self.tab_sipm_hv_config_inst.rear_voltage_run()
@@ -234,14 +234,14 @@ class Ui_MainWindow():
         else:
             self.tab_run_control_inst.status_values['BJT Bias'] = 'Disabled'
 
-        if self.last_pulser_enabled == None:
-            self.tab_run_control_inst.status_values['Pulser Enabled'] = 'No last set of pulser'
+        if self.tab_pulser_inst.pulser.is_open():
+            self.tab_run_control_inst.status_values['LED Pulser Enabled'] = self.tab_pulser_inst.led_pulser.status_enabled.text()
         else:
-            self.tab_run_control_inst.status_values['Pulser Enabled'] = str(self.last_pulser_enabled)
+            self.tab_run_control_inst.status_values['LED Pulser Enabled'] = 'No pulser device'
 
-        if self.last_inhibit_enabled == None:
-            self.tab_run_control_inst.status_values['DAQ Enabled'] = 'No last set of pulser'
+        if self.tab_pulser_inst.pulser.is_open():
+            self.tab_run_control_inst.status_values['Holdoff Pulser Enabled'] = self.tab_pulser_inst.holdoff_pulser.status_enabled.text()
         else:
-            self.tab_run_control_inst.status_values['DAQ Enabled'] = str(not self.last_inhibit_enabled)
+            self.tab_run_control_inst.status_values['Holdoff Pulser Enabled'] = 'No pulser device'
         
         self.tab_run_control_inst.update_status_all()

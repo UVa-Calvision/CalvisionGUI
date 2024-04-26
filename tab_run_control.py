@@ -1,20 +1,20 @@
 from PyQt5 import QtWidgets, QtCore
 from RunConfig import *
-from CallProcess import *
+# from CallProcess import *
 import datetime
 
-class InhibitProcess(CallProcess):
-    def __init__(self):
-        pass
-
-    def handle_output(self, line):
-        print(line)
-
-    def execute(on):
-        postfix = "on"
-        if not on:
-            postfix = "off"
-        return InhibitProcess().run("python3 /home/uva/local_install/python/Inhibit_{}.py".format(postfix))
+# class InhibitProcess(CallProcess):
+#     def __init__(self):
+#         pass
+# 
+#     def handle_output(self, line):
+#         print(line)
+# 
+#     def execute(on):
+#         postfix = "on"
+#         if not on:
+#             postfix = "off"
+#         return InhibitProcess().run("python3 /home/uva/local_install/python/Inhibit_{}.py".format(postfix))
 
 
 class tab_run_control(QtCore.QObject):
@@ -33,15 +33,14 @@ class tab_run_control(QtCore.QObject):
         "Box Relative Humidity",
         "LED Voltage",
         "BJT Bias",
-        "Pulser Enabled",
-        "DAQ Enabled",
+        "LED Pulser Enabled",
+        "Holdoff Pulser Enabled",
     ]
 
     
     run_config_changed = QtCore.pyqtSignal()
     begin_run = QtCore.pyqtSignal()
     end_run = QtCore.pyqtSignal()
-    inhibit_enable = QtCore.pyqtSignal(bool)
 
     def __init__(self, run_config, run_status, MainWindow):
         super().__init__()
@@ -115,54 +114,57 @@ class tab_run_control(QtCore.QObject):
         self.endRunButton.setEnabled(False)
         runButtonLayout.addWidget(self.endRunButton)
         
-        
-        self.inhibitDaqOnButton = QtWidgets.QPushButton()
-        self.inhibitDaqOnButton.setText("Disable DAQ")
-        self.inhibitDaqOnButton.clicked.connect(lambda: self.inhibit_enable.emit(True))
-        #self.inhibitDaqOnButton.clicked.connect(self.end_run)
-        self.inhibitDaqOnButton.setEnabled(True)
-        runButtonLayout.addWidget(self.inhibitDaqOnButton)
 
-        self.inhibitDaqOffButton = QtWidgets.QPushButton()
-        self.inhibitDaqOffButton.setText("Enable DAQ")
-        self.inhibitDaqOffButton.clicked.connect(lambda: self.inhibit_enable.emit(False))
-        self.inhibitDaqOffButton.setEnabled(True)
-        runButtonLayout.addWidget(self.inhibitDaqOffButton)
+        self.inhibit_checkbox = QtWidgets.QCheckBox()
+        self.inhibit_checkbox.setText("Disable DAQ")
+        self.inhibit_checkbox.setChecked(False)
+        self.inhibit_checkbox.setEnabled(False)
+        runButtonLayout.addWidget(self.inhibit_checkbox)
+
+        self.led_checkbox = QtWidgets.QCheckBox()
+        self.led_checkbox.setText("Turn on LED")
+        self.led_checkbox.setChecked(False)
+        self.led_checkbox.setEnabled(False)
+        runButtonLayout.addWidget(self.led_checkbox)
         
         # Connect signals and slots
 
         self.run_config_changed.connect(self.update_config)
         self.begin_run.connect(self.begin_run_button)
         self.end_run.connect(self.end_run_button)
-        self.inhibit_enable.connect(self.inhibit_daq_button)
         
         
         # Update state
 
         self.run_config_changed.emit()
         self.update_status_all()
+        self.enable_holdoff_controls(False, False)
+        self.enable_led_controls(False, False)
 
 
     def begin_run_button(self):
         self.beginRunButton.setEnabled(False)
         self.endRunButton.setEnabled(True)
-        for box in self.config_comboBoxes:
-            self.config_comboBoxes[box].setEnabled(False)
+        self.set_config_editable(False)
 
     def end_run_button(self):
         self.beginRunButton.setEnabled(True)
         self.endRunButton.setEnabled(False)
-        for box in self.config_comboBoxes:
-            self.config_comboBoxes[box].setEnabled(True)
+        self.set_config_editable(True)
 
-    
-    def inhibit_daq_button(self, enable_state):
-        self.inhibitDaqOnButton.setEnabled(not enable_state)
-        self.inhibitDaqOffButton.setEnabled(enable_state)
-        InhibitProcess.execute(enable_state)
+    def set_config_editable(self, enable):
         for box in self.config_comboBoxes:
-            self.config_comboBoxes[box].setEnabled(enable_state)
-            
+            self.config_comboBoxes[box].setEnabled(enable)
+    
+    def enable_holdoff_controls(self, opened, enable):
+        self.inhibit_checkbox.setEnabled(opened)
+        self.inhibit_checkbox.setChecked(enable)
+        self.set_config_editable(not enable)
+
+    def enable_led_controls(self, opened, enable):
+        self.led_checkbox.setEnabled(opened)
+        self.led_checkbox.setChecked(enable)
+
     def update_config(self):
         config_values = {}
         for key in self.config_comboBoxes:
