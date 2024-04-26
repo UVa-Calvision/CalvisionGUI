@@ -1,6 +1,7 @@
 import sys
 sys.path.insert(0, '/home/uva/local_install/python/fygen')
 import fygen
+import subprocess, glob
 
 
 class TestHandle:

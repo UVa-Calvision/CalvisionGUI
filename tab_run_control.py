@@ -41,6 +41,8 @@ class tab_run_control(QtCore.QObject):
     run_config_changed = QtCore.pyqtSignal()
     begin_run = QtCore.pyqtSignal()
     end_run = QtCore.pyqtSignal()
+    inhibit_daq = QtCore.pyqtSignal(bool)
+    led_enable = QtCore.pyqtSignal(bool)
 
     def __init__(self, run_config, run_status, MainWindow):
         super().__init__()
@@ -99,34 +101,65 @@ class tab_run_control(QtCore.QObject):
 
         runButtonWindow = QtWidgets.QWidget()
         runButtonWindow.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Preferred)
-        runButtonLayout = QtWidgets.QHBoxLayout(runButtonWindow)
+        runButtonLayout = QtWidgets.QGridLayout(runButtonWindow)
+        runButtonLayout.setVerticalSpacing(0)
+        runButtonLayout.setHorizontalSpacing(0)
         sectionLayout.addWidget(runButtonWindow)
+        sectionLayout.setAlignment(runButtonWindow, QtCore.Qt.AlignHCenter)
 
+        def format_button(b):
+            font = b.font()
+            font.setPointSize(16)
+            b.setFont(font)
+            b.setStyleSheet("padding-left: 25px; padding-right: 25px; padding-top: 8px; padding-bottom: 8px;")
+
+        row = 0
+        column = 0
         self.beginRunButton = QtWidgets.QPushButton()
         self.beginRunButton.setText("Begin Run")
         self.beginRunButton.clicked.connect(self.begin_run)
         self.beginRunButton.setEnabled(True)
-        runButtonLayout.addWidget(self.beginRunButton)
+        format_button(self.beginRunButton)
+        runButtonLayout.addWidget(self.beginRunButton, row, column)
 
+        column += 1
         self.endRunButton = QtWidgets.QPushButton()
         self.endRunButton.setText("End Run")
         self.endRunButton.clicked.connect(self.end_run)
         self.endRunButton.setEnabled(False)
-        runButtonLayout.addWidget(self.endRunButton)
-        
+        format_button(self.endRunButton)
+        runButtonLayout.addWidget(self.endRunButton, row, column)
 
-        self.inhibit_checkbox = QtWidgets.QCheckBox()
-        self.inhibit_checkbox.setText("Disable DAQ")
-        self.inhibit_checkbox.setChecked(False)
-        self.inhibit_checkbox.setEnabled(False)
-        runButtonLayout.addWidget(self.inhibit_checkbox)
+        row += 1
+        column = 0
+        self.inhibit_on_button = QtWidgets.QPushButton()
+        self.inhibit_on_button.setText("Disable DAQ")
+        self.inhibit_on_button.clicked.connect(lambda: self.inhibit_daq.emit(True))
+        format_button(self.inhibit_on_button)
+        runButtonLayout.addWidget(self.inhibit_on_button, row, column)
+ 
+        column += 1
+        self.inhibit_off_button = QtWidgets.QPushButton()
+        self.inhibit_off_button.setText("Enable DAQ")
+        self.inhibit_off_button.clicked.connect(lambda: self.inhibit_daq.emit(False))
+        format_button(self.inhibit_off_button)
+        runButtonLayout.addWidget(self.inhibit_off_button, row, column)
 
-        self.led_checkbox = QtWidgets.QCheckBox()
-        self.led_checkbox.setText("Turn on LED")
-        self.led_checkbox.setChecked(False)
-        self.led_checkbox.setEnabled(False)
-        runButtonLayout.addWidget(self.led_checkbox)
-        
+        row += 1
+        column = 0
+        self.led_on_button = QtWidgets.QPushButton()
+        self.led_on_button.setText("LED on")
+        self.led_on_button.clicked.connect(lambda: self.led_enable.emit(True))
+        format_button(self.led_on_button)
+        runButtonLayout.addWidget(self.led_on_button, row, column)
+ 
+        column += 1
+        self.led_off_button = QtWidgets.QPushButton()
+        self.led_off_button.setText("LED off")
+        self.led_off_button.clicked.connect(lambda: self.led_enable.emit(False))
+        format_button(self.led_off_button)
+        runButtonLayout.addWidget(self.led_off_button, row, column)
+
         # Connect signals and slots
 
         self.run_config_changed.connect(self.update_config)
@@ -157,13 +190,22 @@ class tab_run_control(QtCore.QObject):
             self.config_comboBoxes[box].setEnabled(enable)
     
     def enable_holdoff_controls(self, opened, enable):
-        self.inhibit_checkbox.setEnabled(opened)
-        self.inhibit_checkbox.setChecked(enable)
-        self.set_config_editable(not enable)
+        if not opened:
+            self.inhibit_on_button.setEnabled(False)
+            self.inhibit_off_button.setEnabled(False)
+            self.set_config_editable(True)
+        else:
+            self.inhibit_on_button.setEnabled(not enable)
+            self.inhibit_off_button.setEnabled(enable)
+            self.set_config_editable(not enable)
 
     def enable_led_controls(self, opened, enable):
-        self.led_checkbox.setEnabled(opened)
-        self.led_checkbox.setChecked(enable)
+        if not opened:
+            self.led_on_button.setEnabled(False)
+            self.led_off_button.setEnabled(False)
+        else:
+            self.led_on_button.setEnabled(not enable)
+            self.led_off_button.setEnabled(enable)
 
     def update_config(self):
         config_values = {}

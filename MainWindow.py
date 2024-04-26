@@ -129,8 +129,8 @@ class Ui_MainWindow():
         self.tab_pi_control_inst.low_voltage_set.connect(self.set_last_led_voltage)
         self.tab_pi_control_inst.high_voltage_set.connect(self.set_last_bjt_bias)
 
-        self.tab_run_control_inst.inhibit_checkbox.clicked.connect(self.tab_pulser_inst.holdoff_pulser.enable_controls)
-        self.tab_run_control_inst.led_checkbox.clicked.connect(self.tab_pulser_inst.led_pulser.enable_controls)
+        self.tab_run_control_inst.inhibit_daq.connect(self.tab_pulser_inst.holdoff_pulser.enable_controls)
+        self.tab_run_control_inst.led_enable.connect(self.tab_pulser_inst.led_pulser.enable_controls)
 
         self.tab_pulser_inst.led_pulser.control_change.connect(self.tab_run_control_inst.enable_led_controls)
         self.tab_pulser_inst.holdoff_pulser.control_change.connect(self.tab_run_control_inst.enable_holdoff_controls)
