@@ -13,6 +13,7 @@ crystals = [
     "PWO_18cm",
     "SICBS01309",
     "LED_Calib",
+    "Testing",
 ]
 
 sipm_types = [
