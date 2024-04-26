@@ -37,7 +37,7 @@ class tab_previous_runs:
 
             for i, x in enumerate(run.to_dict().values()):
                 item = QtWidgets.QTableWidgetItem()
-                item.setText(x)
+                item.setText(str(x))
                 self.config_table.setItem(row_index, i + 1, item)
 
 
