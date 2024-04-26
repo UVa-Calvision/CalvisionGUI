@@ -182,6 +182,7 @@ class Ui_MainWindow():
         self.tab_daq_control_inst.monitor_plots.run_start()
         self.tab_pi_control_inst.monitor_plots.run_start()
         self.tab_sipm_hv_config_inst.monitor_plots.run_start()
+        self.save_status(self.run_config.run_directory() + "/run_start_status.json")
         self.tab_daq_control_inst.start_DAQ()
 
     def end_run(self):
@@ -191,6 +192,7 @@ class Ui_MainWindow():
             self.tab_daq_control_inst.monitor_plots.run_stop()
             self.tab_pi_control_inst.monitor_plots.run_stop()
             self.tab_sipm_hv_config_inst.monitor_plots.run_stop()
+            self.save_status(self.run_config.run_directory() + "/run_end_status.json")
             self.check_repeat()
 
     def update_status(self):
@@ -248,3 +250,11 @@ class Ui_MainWindow():
             self.tab_run_control_inst.status_values['Holdoff Pulser Enabled'] = 'No pulser device'
         
         self.tab_run_control_inst.update_status_all()
+
+    def save_status(self, filename):
+        try:
+            self.update_status()
+            with open(filename, 'w') as outfile:
+                outfile.write(json.dumps(self.tab_run_control_inst.status_values, indent = 4))
+        except Exception as e:
+            print("Failed to write status file to {}".format(e))
