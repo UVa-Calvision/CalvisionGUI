@@ -34,6 +34,9 @@ class RunStatus:
         self.is_running = False
 
 
+default_hg_config = "/home/uva/daq_staging/defaults/2024-04-24_HG_settings.cfg"
+default_lg_config = "/home/uva/daq_staging/defaults/2024-04-24_LG_settings.cfg"
+
 class Ui_MainWindow():
     
     def __init__(self):
@@ -140,21 +143,21 @@ class Ui_MainWindow():
         self.update_status()
         self.tab_run_control_inst.update_angle(self.tab_rotor_control_inst.angle)
 
-        latest_run = self.tab_previous_runs_inst.latest_run()
-        if latest_run != None:
-            print("Attempting to load HG digitizer config from run {}".format(latest_run.run_number))
-            try:
-                self.tab_digi_config_insts[0].load_config(latest_run.hg_config_file())
-                print("Successfully loaded")
-            except Exception as e:
-                print("Failed to load config")
 
-            print("Attempting to load LG digitizer config from run {}".format(latest_run.run_number))
-            try:
-                self.tab_digi_config_insts[1].load_config(latest_run.lg_config_file())
-                print("Successfully loaded")
-            except Exception as e:
-                print("Failed to load config")
+        print("Attempting to load HG digitizer config from {}".format(default_hg_config))
+        try:
+            self.tab_digi_config_insts[0].load_config(default_hg_config)
+            print("Successfully loaded HG config")
+        except Exception as e:
+            print("Failed to load HG config: {}".format(e))
+
+        print("Attempting to load LG digitizer config from {}".format(default_lg_config))
+        try:
+            self.tab_digi_config_insts[1].load_config(default_lg_config)
+            print("Successfully loaded LG config")
+        except Exception as e:
+            print("Failed to load LG config: {}".format(e))
+
 
     def set_last_led_voltage(self, v):
         self.last_led_voltage = v
