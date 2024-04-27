@@ -3,13 +3,14 @@ import sys
 import json
 
 crystals = [
-    "PbF2_6cm",
-    "BGO_6cm",
-    "PWO_6cm",
-    "DSB-3",
-    "ABSZL",
     "ABSC5",
+    "ABSZL",
+    "BGO_6cm",
     "BGO_18cm",
+    "DSB-3",
+    "PbF2_6cm",
+    "PbF2_18cm",
+    "PWO_6cm",
     "PWO_18cm",
     "SICBS01309",
     "LED_Calib",
@@ -33,6 +34,7 @@ back_filter_types = [
     "Kodak 560",
     "Kodak 580",
     "O560",
+    "600 2mm",
     "R640 1mm",
     "R640 2.5mm",
     "RG610",
