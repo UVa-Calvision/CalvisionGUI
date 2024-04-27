@@ -138,7 +138,7 @@ class Ui_MainWindow():
         self.tab_rotor_control_inst.angle_changed.connect(self.tab_run_control_inst.update_angle)
 
         # Make sure state is up to date
-        self.tab_pulser_inst.open_checkbox.click()
+        self.tab_pulser_inst.setup()
         self.check_repeat()
         self.update_status()
         self.tab_run_control_inst.update_angle(self.tab_rotor_control_inst.angle)

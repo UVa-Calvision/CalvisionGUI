@@ -50,7 +50,7 @@ class PulserWidget(QWidget):
 
         self.default_setup_button = QPushButton()
         self.default_setup_button.setText("Default Setup")
-        self.default_setup_button.clicked.connect(self.set_default)
+        self.default_setup_button.clicked.connect(lambda: self.set_default)
         controlLayout.addRow(self.default_setup_button)
 
         spacer = QSpacerItem(0, 50)
@@ -115,10 +115,10 @@ class PulserWidget(QWidget):
         self.sync_with_pulser()
 
 
-    def set_default(self):
+    def set_default(self, enabled = False):
         print("Applying pulser default settings, may take a long time...")
         self.pulser.set_default(self.channel)
-        self.pulser.set_enabled(self.channel, False)
+        self.pulser.set_enabled(self.channel, enabled)
         self.sync_with_pulser(True)
 
     def apply(self):
@@ -264,3 +264,9 @@ class tab_pulser(QObject):
     def power_off(self):
         self.pulser.all_off()
         self.pulser.close()
+
+    def setup(self):
+        self.open_checkbox.click()
+        if self.pulser.is_open():
+            self.led_pulser.set_default(enabled = False)
+            self.holdoff_pulser.set_default(enabled = True)

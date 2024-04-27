@@ -132,18 +132,18 @@ class tab_run_control(QtCore.QObject):
 
         row += 1
         column = 0
-        self.inhibit_on_button = QtWidgets.QPushButton()
-        self.inhibit_on_button.setText("Disable DAQ")
-        self.inhibit_on_button.clicked.connect(lambda: self.inhibit_daq.emit(True))
-        format_button(self.inhibit_on_button)
-        runButtonLayout.addWidget(self.inhibit_on_button, row, column)
- 
-        column += 1
         self.inhibit_off_button = QtWidgets.QPushButton()
         self.inhibit_off_button.setText("Enable DAQ")
         self.inhibit_off_button.clicked.connect(lambda: self.inhibit_daq.emit(False))
         format_button(self.inhibit_off_button)
         runButtonLayout.addWidget(self.inhibit_off_button, row, column)
+
+        column += 1
+        self.inhibit_on_button = QtWidgets.QPushButton()
+        self.inhibit_on_button.setText("Disable DAQ")
+        self.inhibit_on_button.clicked.connect(lambda: self.inhibit_daq.emit(True))
+        format_button(self.inhibit_on_button)
+        runButtonLayout.addWidget(self.inhibit_on_button, row, column)
 
         row += 1
         column = 0
@@ -197,7 +197,7 @@ class tab_run_control(QtCore.QObject):
         else:
             self.inhibit_on_button.setEnabled(not enable)
             self.inhibit_off_button.setEnabled(enable)
-            self.set_config_editable(not enable)
+            self.set_config_editable(enable)
 
     def enable_led_controls(self, opened, enable):
         if not opened:

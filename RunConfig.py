@@ -87,12 +87,7 @@ class RunConfig:
  
     def make_next_run(self):
         run_numbers = [int(name[4:]) for name in os.listdir(staging_area) if name.startswith("run_")]
-        for i in range(len(run_numbers)):
-            if i not in run_numbers:
-                self.run_number = i
-                self.save()
-                return
-        self.run_number = len(run_numbers)
+        self.run_number = max(run_numbers) + 1 if len(run_numbers) > 0 else 0
         self.save()
 
 
