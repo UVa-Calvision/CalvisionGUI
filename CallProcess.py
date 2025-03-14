@@ -8,6 +8,7 @@ import os
 class CallProcess:
     def __init__(self):
         self.proc = None
+        self.timeout = None
 
     # Runs the process and prints the stdout and stderr
     # This is blocking, but you may call message and other methods
@@ -26,7 +27,7 @@ class CallProcess:
             self.print_lines_from_fd(self.proc.stderr.fileno(), handle=False)
             
             # Wait for the process to end (pipes might close before process stops)
-            self.proc.wait()
+            self.proc.wait(self.timeout)
 
             # Check return code
             if self.proc.returncode != 0:
@@ -48,33 +49,39 @@ class CallProcess:
             print("Process isn't running. Can't send text: {}".format(text))
             return
 
-        # Send text through stdin
-        os.write(self.proc.stdin.fileno(), text.encode('utf-8'))
+        try:
+            # Send text through stdin
+            os.write(self.proc.stdin.fileno(), text.encode('utf-8'))
+        except Exception as e:
+            print("Failed to send message {} to the process".format(text))
 
     def print_lines_from_fd(self, fd, handle=True):
-        s = ""
-        while True: 
-            new_text = os.read(fd, 10).decode('ascii')
-            if len(new_text) == 0:
-                for line in s.splitlines():
+        try:
+            s = ""
+            while True: 
+                new_text = os.read(fd, 10).decode('ascii')
+                if len(new_text) == 0:
+                    for line in s.splitlines():
+                        if handle:
+                            self.handle_output(line)
+                        else:
+                            print(line)
+                    break
+
+                s += new_text
+                lines = s.splitlines()
+                if s[-1] != '\n':
+                    s = lines[-1]
+                    lines.pop()
+                else:
+                    s = ""
+                for line in lines:
                     if handle:
                         self.handle_output(line)
                     else:
                         print(line)
-                break
-
-            s += new_text
-            lines = s.splitlines()
-            if s[-1] != '\n':
-                s = lines[-1]
-                lines.pop()
-            else:
-                s = ""
-            for line in lines:
-                if handle:
-                    self.handle_output(line)
-                else:
-                    print(line)
+        except Exception as e:
+            print("Failed to read lines from process file descriptor: {}".format(fd))
 
 
     # Helper function for how to handle output
@@ -86,7 +93,7 @@ class CallProcess:
 # Generally this won't look at returned data from the Pi
 class ClientVerboseProcess(CallProcess):
     def __init__(self):
-        pass
+        self.timeout = 5
 
     def handle_output(self, line):
         print(line)
@@ -102,6 +109,7 @@ class ClientVerboseProcess(CallProcess):
 class ClientReadProcess(CallProcess):
     def __init__(self):
         self.result = ""
+        self.timeout = 5
 
     def handle_output(self, line):
         self.result += line

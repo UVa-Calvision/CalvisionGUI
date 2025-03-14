@@ -1,11 +1,15 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from CallProcess import *
 from Worker_startDAQ import *
+import pyvisa
+import time
+from GUI_lowlevel import *
 
 
 class CalibrateProcess(CallProcess):
     def __init__(self):
-        pass
+        self.visa_resources=0
+        self.siggen_inst = 0
 
     def handle_output(self, line):
         print(line)
@@ -24,20 +28,118 @@ class tab_calibrate(QtCore.QObject):
         self.setup_UI(MainWindow)
 
     def setup_UI(self, MainWindow):
-        self.sectionLayout = QtWidgets.QGridLayout(MainWindow)
+        sectionLayout = QtWidgets.QVBoxLayout(MainWindow)
+        buttonWindow = QtWidgets.QWidget()
+        buttonWindow.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Preferred)
+        self.gridLayout = QtWidgets.QGridLayout(buttonWindow)
+
+
 
         row = 0
         column = 0
-        self.pushButton_calibrateDRS = QtWidgets.QPushButton()
-        self.pushButton_calibrateDRS.setText("Calibrate DRS's")
-        self.sectionLayout.addWidget(self.pushButton_calibrateDRS, row, column, 1, 1)
-        self.pushButton_calibrateDRS.clicked.connect(self.calibrate_DRS)
+        self.pushButton_calibrateDRS = create_button("Calibrate DRS's", row, column, 1, self.calibrate_DRS, layout=self.gridLayout)
 
         column += 1
-        self.pushButton_resetDRS = QtWidgets.QPushButton()
-        self.pushButton_resetDRS.setText("Reset DRS's")
-        self.pushButton_resetDRS.clicked.connect(Reset_DAQ.execute)
-        self.sectionLayout.addWidget(self.pushButton_resetDRS, row, column, 1, 1)
+        self.pushButton_resetDRS = create_button("Reset DRS's", row, column, 1, Reset_DAQ.execute, layout=self.gridLayout)
+
+        row += 1
+        column = 0
+        self.pushButton_open_SigGen = create_button("Find SigGen", row, column, 1, self.open_SigGen, layout=self.gridLayout)
+
+        column += 1
+        self.pushButton_set_SigGen = create_button("Set SigGen", row, column, 1, self.setup_SigGen, layout=self.gridLayout)
+
+        column += 1
+        self.pushButton_en_SigGen = create_checkbox("Output En", row, column, 1, self.output_enable, layout=self.gridLayout)
+
+
+        row += 1
+        column = 0
+        self.spinBox_freq=create_spinbox("Frequency(Hz)", row, column, 1, initvalue=1000, layout=self.gridLayout)
+
+        column += 2
+        self.lineEdit_width=create_lineedit("Pulse Width(s)", row, column, 1, initvalue='1E-6', layout=self.gridLayout)
+        
+        column += 2
+        self.lineEdit_delay=create_lineedit("CH2 Delay Width(s)", row, column, 1, initvalue='75E-9', layout=self.gridLayout)
+        
+        row += 1
+        column = 0
+        self.spinBox_CH1_high=create_double_spinbox("CH1 high(V)", row, column, 1, initvalue=1.0, layout=self.gridLayout)
+        
+        column += 2
+        self.spinBox_CH1_low=create_double_spinbox("CH1 low(V)", row, column, 1, initvalue=0, layout=self.gridLayout)
+        
+        column += 2
+        self.spinBox_CH2_high=create_double_spinbox("CH2 high(V)", row, column, 1, initvalue=1.0, layout=self.gridLayout)
+        
+
+        column += 2
+        self.spinBox_CH2_low=create_double_spinbox("CH2 low(V)", row, column, 1, initvalue=0, layout=self.gridLayout)
+               
+        sectionLayout.addWidget(buttonWindow)
 
     def calibrate_DRS(self):
         CalibrateProcess.execute()
+
+    def open_SigGen(self):  
+        # Initialize VISA resource manager
+
+        self.visa_resources = pyvisa.ResourceManager("@py")  #pyvisa-py works, pyvisa-ni does not
+        # List available devices
+        resources = self.visa_resources.list_resources()
+        print("Available resources:", resources)
+
+        # Connect to AFG3252 (Modify the resource string if needed)
+        self.siggen_inst = self.visa_resources.open_resource('USB0::1689::837::C021122::0::INSTR')
+        reply = self.siggen_inst.query('*IDN?')
+        print(reply)
+
+    def setup_SigGen(self):
+        # Configure CH1 and CH2 for pulse wave
+        for ch in [1, 2]:
+            self.siggen_inst.write(f"SOURCE{ch}:FUNCTION PULSE")       # Set function to pulse
+            time.sleep(0.1)                              # between commands for stability.
+            self.siggen_inst.write(f"SOURCE{ch}:FREQUENCY {self.spinBox_freq.value()}")      # Set frequency to 1 kHz
+            time.sleep(0.1)
+            
+            self.siggen_inst.write(f"SOURCE{ch}:PULSE:WIDTH {self.lineEdit_width.text()}")   # Set pulse width to 1000 ns (1µs)
+            time.sleep(0.1)
+
+        self.siggen_inst.write(f"SOURCE1:VOLTAGE:HIGH {self.spinBox_CH1_high}")      # Set high voltage to 1V
+        time.sleep(0.1)
+        self.siggen_inst.write(f"SOURCE1:VOLTAGE:LOW {self.spinBox_CH1_low}")       # Set low voltage to 0V
+        time.sleep(0.1)
+        self.siggen_inst.write(f"SOURCE2:VOLTAGE:HIGH {self.spinBox_CH2_high}")      # Set high voltage to 1V
+        time.sleep(0.1)
+        self.siggen_inst.write(f"SOURCE2:VOLTAGE:LOW {self.spinBox_CH2_low}")       # Set low voltage to 0V
+        time.sleep(0.1)
+
+        # Synchronize both channels
+        self.siggen_inst.write("SOURCE2:FREQ:COUPLE ON")  # CH2 will follow CH1, does not work
+        time.sleep(0.1)
+        self.siggen_inst.write("SOURCE1:PULSE:DELAY 0")
+        time.sleep(0.1)
+        self.siggen_inst.write("SOURCE2:PHASE:SYNC") # Ensure phase synchronization, does not work either
+        time.sleep(0.1)
+        self.siggen_inst.write(f"SOURCE2:PULSE:DELAY {self.lineEdit_delay.text()}")
+        print("Signal generator set up completes")
+
+    def output_enable(self, state):
+        value = 1 if state == Qt.Checked else 0
+        if value:
+            # Enable both channels
+            self.siggen_inst.write("OUTPUT1 ON")
+            time.sleep(0.1)
+            self.siggen_inst.write("OUTPUT2 ON")
+            time.sleep(0.1)
+            print("Signal generator output enabled for both channels")
+        else:
+            self.siggen_inst.write("OUTPUT1 OFF")
+            time.sleep(0.1)
+            self.siggen_inst.write("OUTPUT2 OFF")
+            time.sleep(0.1)
+            print("Signal generator output disabled for both channels")
+
+
+
