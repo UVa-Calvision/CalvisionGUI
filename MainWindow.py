@@ -61,6 +61,10 @@ class Ui_MainWindow():
         self.tabWidget.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         mainLayout.addWidget(self.tabWidget)
 
+        self.pushButton_clearinfo = QtWidgets.QPushButton()
+        self.pushButton_clearinfo.setText("clear info display")
+        self.pushButton_clearinfo.clicked.connect(self.clear_info)
+        mainLayout.addWidget(self.pushButton_clearinfo)
 
         label_TextBrowser = QtWidgets.QLabel()
         label_TextBrowser.setText("Output Log")
@@ -164,6 +168,10 @@ class Ui_MainWindow():
 
     def set_last_bjt_bias(self, v):
         self.last_bjt_bias = v
+
+    def clear_info(self):
+        self.textBrowser.clear()
+
 
     def check_repeat(self):
         self.run_config.front_sipm_voltage = self.tab_sipm_hv_config_inst.front_voltage_run()

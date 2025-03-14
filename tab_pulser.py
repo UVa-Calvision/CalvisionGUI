@@ -53,7 +53,7 @@ class PulserWidget(QWidget):
         self.default_setup_button.clicked.connect(lambda: self.set_default)
         controlLayout.addRow(self.default_setup_button)
 
-        spacer = QSpacerItem(0, 50)
+        spacer = QSpacerItem(0, 10)
         controlLayout.addItem(spacer)
 
         # Controls
